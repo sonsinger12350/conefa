@@ -1,0 +1,1486 @@
+header {
+	min-height: unset;
+}
+
+header .content {
+	display: none;
+}
+
+header .logo img {
+	width: 63px;
+	scale: 1.4;
+}
+
+.banner {
+	position: relative;
+	margin-top: 78px;
+}
+
+.banner .bg-header {
+	position: absolute;
+	top: 0px;
+	left: 0px;
+	width: 100%;
+	height: 79px;
+	background: linear-gradient(90deg, #111F12 0%, #1B2C1A 100%);
+	z-index: -1;
+}
+
+.banner .content {
+	background-position: center;
+	background-size: cover;
+	background-repeat: no-repeat;
+	position: relative;
+	margin: 0px 24px;
+	border-radius: 16px;
+	padding: 90px 0px 132px 118px;
+}
+
+.banner .content .bg-blur {
+	position: absolute;
+	top: 0px;
+	left: 0px;
+	width: 80%;
+	height: 100%;
+	background: linear-gradient(90deg, #000 0%, rgba(0, 0, 0, 0.00) 100%);
+	z-index: 1;
+	border-radius: 16px;
+}
+
+.banner .content .title {
+	color: #fff;
+	font-size: 67px;
+	font-weight: 300;
+	line-height: 108%;
+	letter-spacing: -1.34px;
+	position: inherit;
+	z-index: 1;
+	width: 800px;
+	margin: 0px;
+}
+
+.banner .content .desc {
+	color: #fff;
+	font-size: 20px;
+	font-weight: 600;
+	line-height: 30px;
+	letter-spacing: 2px;
+	text-transform: uppercase;
+	position: inherit;
+	z-index: 1;
+	margin-bottom: 10px;
+}
+
+.welcome {
+	width: 80%;
+	display: flex;
+	justify-content: center;
+	column-gap: 71px;
+	margin-left: auto;
+	margin-right: auto;
+}
+
+.welcome .title p {
+	color: var(--main-black);
+	font-size: 67px;
+	font-weight: 300;
+	line-height: 122%;
+	letter-spacing: -1.34px;
+	width: 530px;
+}
+
+.welcome .title p span {
+	color: var(--main-green);
+	font-size: 67px;
+	font-weight: 300;
+	line-height: 122%;
+	letter-spacing: -1.34px;
+}
+
+.welcome .desc {
+	width: 566px;
+	margin-top: 32px;
+}
+
+.welcome .desc p {
+	color: var(--body-color);
+	text-align: justify;
+	font-size: 15px;
+	font-weight: 400;
+	line-height: 20px;
+	letter-spacing: 0.15px;
+}
+
+.welcome .desc p.highlight {
+	color: var(--main-green);
+	font-weight: 700;
+	margin: 0;
+}
+
+.opportunity {
+	padding: 70px 132px 105px 142px;
+	display: flex;
+	justify-content: space-between;
+	background: var(--main-green);
+}
+
+.opportunity .title {
+	color: #FFF;
+	font-size: 67px;
+	font-weight: 300;
+	line-height: 122%;
+	letter-spacing: -1.34px;
+}
+
+.opportunity .desc {
+	color: #FFF;
+	font-size: 20px;
+	font-weight: 600;
+	line-height: 30px;
+	letter-spacing: 2px;
+	text-transform: uppercase;
+	width: 519px;
+}
+
+.opportunity .count {
+	position: relative;
+	padding-top: 160px;
+}
+
+.opportunity .count .total {
+	position: absolute;
+	top: 0px;
+	left: 0px;
+	font-size: 200px;
+	font-weight: 600;
+	line-height: 1;
+	margin: 0px;
+	opacity: 0.3;
+	color: transparent;
+	-webkit-text-stroke: 2px #ffffff;
+	-webkit-mask-image: linear-gradient(180deg, rgb(255 255 255) 60%, rgba(0, 0, 0, 0) 85%);
+	mask-image: linear-gradient(180deg, rgb(255 255 255) 60%, rgba(0, 0, 0, 0) 85%);
+}
+
+.opportunity .count .count-desc {
+	color: #fff;
+	font-size: 16px;
+	font-weight: 600;
+	line-height: 24px;
+	letter-spacing: 1.6px;
+	text-transform: uppercase;
+	z-index: 1;
+	position: inherit;
+	margin-left: 160px;
+}
+
+.job {
+	width: 80%;
+	margin-left: auto;
+	margin-right: auto;
+}
+
+.job .list {
+	display: flex;
+	flex-wrap: wrap;
+	margin-bottom: 65px;
+}
+
+.job .list .item {
+	width: 50%;
+	padding: 36px;
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+	cursor: pointer;
+}
+
+.job .list .item * {
+	margin: 0;
+}
+
+.job .list .item.active,
+.job .list .item:hover {
+	border-left: 2px solid var(--main-green);
+	background: #FFF;
+	box-shadow: 6px 6px 20px 0px rgba(0, 0, 0, 0.10);
+}
+
+.job .list .item .title {
+	color: var(--body-color);
+	font-size: 20px;
+	font-weight: 600;
+	line-height: 30px;
+	letter-spacing: 2px;
+	text-transform: uppercase;
+}
+
+.job .list .item.active .title,
+.job .list .item:hover .title {
+	color: #000;
+}
+
+.job .list .item .location {
+	display: flex;
+	justify-content: space-between;
+	width: 325px;
+}
+
+.job .list .item .location p {
+	color: var(--body-color);
+	font-size: 15px;
+	font-weight: 400;
+	line-height: 20px;
+	letter-spacing: 0.15px;
+}
+
+.job .list .item .salary {
+	color: var(--Main-Black, #272727);
+	font-size: 15px;
+	font-weight: 700;
+	line-height: 20px;
+	letter-spacing: 0.15px;
+}
+
+.job .btn-load-more {
+	height: 40px;
+	padding: 10px;
+	border-radius: 6px;
+	border: 1px solid #DCDCDC;
+	background: #F7F7F7;
+	color: var(--body-color);
+	font-size: 12px;
+	font-weight: 500;
+	letter-spacing: 1.2px;
+	text-transform: uppercase;
+	line-height: 1px;
+}
+
+.jobModal {
+	opacity: 1;
+	background: #272727d4;
+}
+
+.jobModal .btn-close-modal {
+	position: absolute;
+	top: 0px;
+	right: -120px;
+	color: #FFF;
+	font-size: 16px;
+	font-weight: 600;
+	line-height: 24px;
+	letter-spacing: 1.6px;
+	text-transform: uppercase;
+	cursor: pointer;
+	margin: 0;
+}
+
+.jobModal .banner {
+	margin-top: 0;
+}
+
+.jobModal .banner .content {
+	margin: 0;
+	padding: 50px 0px 50px 118px;
+}
+
+.jobModal .banner .content .title {
+	font-size: 48px;
+}
+
+.jobModal .job-detail {
+	display: flex;
+	justify-content: space-between;
+	margin-top: 50px;
+}
+
+.jobModal .job-detail .left {
+	width: 30%;
+	border-radius: 16px;
+	background: var(--light-green);
+	padding: 36px;
+	display: flex;
+	flex-direction: column;
+	gap: 30px;
+}
+
+.jobModal .job-detail .left * {
+	margin: 0;
+}
+
+.jobModal .job-detail .left hr {
+	width: 70px;
+	border-color: #fff;
+}
+
+.jobModal .job-detail .left .item * {
+	color: var(--main-black);
+	font-size: 15px;
+	font-weight: 700;
+	line-height: 20px;
+	letter-spacing: 0.15px;
+}
+
+.jobModal .job-detail .left .item .detail {
+	font-weight: 400;
+}
+
+.jobModal .job-detail .right {
+	width: 60%;
+}
+
+.jobModal .job-detail .right p.title {
+	color: #2E2E2E;
+	font-size: 20px;
+	font-weight: 600;
+	line-height: 30px;
+	letter-spacing: 2px;
+	text-transform: uppercase;
+	margin-bottom: 20px;
+}
+
+.jobModal .job-detail .right p {
+	color: #2E2E2E;
+	font-size: 15px;
+	font-weight: 400;
+	line-height: 20px;
+	letter-spacing: 0.15px;
+	margin-bottom: 10px;
+}
+
+.jobModal .job-detail .right p img {
+	margin-right: 10px;
+}
+
+.jobModal .job-detail .right .desc {
+	margin-bottom: 50px;
+}
+
+.jobModal .job-detail .right .desc p {
+	display: flex;
+	align-items: end;
+}
+
+.jobModal .job-detail .right .desc p:last-child,
+.jobModal .job-detail .right .benefit p:last-child {
+	margin: 0;
+}
+
+.jobModal .job-detail .right .desc p .text {
+	width: calc(100% - 26px);
+}
+
+.jobModal .job-detail .right .desc p .line {
+	width: 16px;
+	height: 1px;
+	background: var(--main-green);
+	display: block;
+	margin-right: 10px;
+}
+
+.policy {
+	padding: 0 24px;
+}
+
+.policy .head {
+	position: relative;
+}
+
+.policy .head .title {
+	color: var(--main-black);
+	font-size: 67px;
+	font-weight: 300;
+	line-height: 122%;
+	letter-spacing: -1.34px;
+	width: 629px;
+}
+
+.policy .head .title span {
+	color: var(--main-green);
+}
+
+.policy .head .content {
+	position: absolute;
+	bottom: 0px;
+	left: 480px;
+	color: var(--body-color);
+	font-size: 15px;
+	font-weight: 400;
+	line-height: 20px;
+	letter-spacing: 0.15px;
+	width: 802px;
+}
+
+.policy .head .content::before {
+	content: "";
+	width: 120px;
+	height: 1px;
+	background-color: var(--gray);
+	position: absolute;
+	top: 10px;
+	left: -140px;
+}
+
+.policy .head .content::after {
+	content: "";
+	width: 10px;
+	height: 10px;
+	background-color: var(--gray);
+	position: absolute;
+	top: 6px;
+	left: -20px;
+	border-radius: 50%;
+}
+
+.policy .head .content p {
+	margin: 0;
+}
+
+.policy .list {
+	display: flex;
+	justify-content: space-around;
+	margin-top: 50px;
+}
+
+.policy .list .item {
+	width: 330px;
+}
+
+.policy .list .item img {
+	width: 100%;
+	height: 220px;
+	object-fit: cover;
+	object-position: center;
+}
+
+.policy .list .content {
+	padding-top: 24px;
+	padding-left: 24px;
+	border-left: 1px solid #E2E2E2;
+}
+
+.policy .list .content .title {
+	color: var(--main-green);
+	font-size: 20px;
+	font-weight: 600;
+	line-height: 30px;
+	letter-spacing: 2px;
+	text-transform: uppercase;
+	margin-bottom: 24px;
+}
+
+.policy .list .content .desc p {
+	color: var(--body-color);
+	font-size: 15px;
+	font-weight: 400;
+	line-height: 20px;
+	letter-spacing: 0.15px;
+}
+
+.policy .list .content .desc p b {
+	color: var(--main-black);
+}
+
+.increase {
+	background-position: center;
+	background-size: cover;
+	padding: 50px 144px 133px 0;
+	position: relative;
+}
+
+.increase .bg-blur {
+	position: absolute;
+	bottom: 0px;
+	left: 0px;
+	width: 100%;
+	height: 100%;
+	opacity: 0.8;
+	background: var(--Main-Black, #272727);
+	z-index: 0;
+}
+
+.increase .head {
+	position: inherit;
+	z-index: 1;
+	display: flex;
+	justify-content: space-between;
+}
+
+.increase .head .title {
+	color: #FFF;
+	font-size: 67px;
+	font-weight: 300;
+	line-height: 122%;
+	letter-spacing: -1.34px;
+	padding-left: 142px;
+	position: relative;
+	width: 625px;
+}
+
+.increase .head .title::before {
+	content: "";
+	width: 120px;
+	height: 1px;
+	background-color: var(--gray);
+	position: absolute;
+	top: 40px;
+	left: 0px;
+}
+
+.increase .head .title::after {
+	content: "";
+	width: 10px;
+	height: 10px;
+	background-color: var(--gray);
+	position: absolute;
+	top: 36px;
+	left: 120px;
+	border-radius: 50%;
+}
+
+.increase .head .title span {
+	color: var(--main-green);
+}
+
+.increase .head .desc {
+	width: 448px;
+}
+
+.increase .head .desc p {
+	color: #FFF;
+	text-align: justify;
+	font-size: 15px;
+	font-weight: 400;
+	line-height: 20px;
+	letter-spacing: 0.15px;
+}
+
+.increase .body {
+	position: inherit;
+	z-index: 1;
+	width: 684px;
+	height: 592px;
+	margin-left: auto;
+	margin-right: auto;
+}
+
+.increase .body .content {
+	display: flex;
+	justify-content: center;
+	background-size: 100%;
+	background-position-y: 100%;
+	background-repeat: no-repeat;
+	padding-top: 150px;
+}
+
+.increase .body .content table tr {
+	height: 74px;
+}
+
+.increase .body .content table tr td {
+	color: #FFF;
+	text-align: center;
+	font-size: 16px;
+	font-weight: 600;
+	line-height: 24px;
+	letter-spacing: 1.6px;
+	text-transform: uppercase;
+}
+
+.increase .body .content table tr td.left {
+	text-align: right;
+	padding-right: 20px;
+	width: 160px;
+}
+
+.increase .body .content table tr td.right {
+	text-align: left;
+	padding-left: 20px;
+	width: 160px;
+}
+
+.standard {
+	padding: 50px 25px;
+	background: var(--main-green);
+}
+
+.standard .title {
+	color: #FFF;
+	font-size: 67px;
+	font-weight: 300;
+	line-height: 122%;
+	letter-spacing: -1.34px;
+	width: 525px;
+}
+
+.standard .content {
+	display: flex;
+	justify-content: space-between;
+}
+
+.standard .content .item {
+	position: relative;
+	padding-top: 160px;
+}
+
+.standard .content .item .count {
+	position: absolute;
+	top: 0px;
+	left: 0px;
+	font-size: 200px;
+	font-weight: 600;
+	line-height: 1;
+	margin: 0px;
+	opacity: 0.3;
+	color: transparent;
+	-webkit-text-stroke: 2px #ffffff;
+	-webkit-mask-image: linear-gradient(180deg, rgb(255 255 255) 60%, rgba(0, 0, 0, 0) 85%);
+	mask-image: linear-gradient(180deg, rgb(255 255 255) 60%, rgba(0, 0, 0, 0) 85%);
+}
+
+.standard .content .item .line {
+	position: absolute;
+	top: 120px;
+	left: 112px;
+}
+
+.standard .content .item .desc {
+	margin-left: 110px;
+}
+
+.standard .content .item .desc .item-title {
+	color: #fff;
+	font-size: 16px;
+	font-weight: 600;
+	line-height: 24px;
+	letter-spacing: 1.6px;
+	text-transform: uppercase;
+	margin: 0;
+}
+
+.standard .content .item .desc .item-desc {
+	color: #fff;
+	font-size: 15px;
+	font-weight: 400;
+	line-height: 20px;
+	letter-spacing: 0.15px;
+	width: 212px;
+	margin: 0;
+}
+
+.step {
+	margin-left: 142px;
+	margin-right: 142px;
+}
+
+.step .content {
+	position: relative;
+	padding-bottom: 144px;
+}
+
+.step .content img {
+	width: 90%;
+	height: 584px;
+	object-fit: cover;
+	border-radius: 16px;
+}
+
+.step .content .block {
+	position: absolute;
+	bottom: 0px;
+	right: 0px;
+	padding: 50px;
+	border-radius: 16px;
+	background: var(--light-green);
+	width: 448px;
+}
+
+.step .content .block .desc {
+	color: #FFF;
+	font-size: 15px;
+	font-weight: 400;
+	line-height: 20px;
+	letter-spacing: 0.15px;
+	margin: 0;
+}
+
+.step .content .block .title {
+	color: #FFF;
+	font-size: 24px;
+	font-style: italic;
+	font-weight: 400;
+	letter-spacing: 0.24px;
+	margin: 0;
+}
+
+.step .content .block svg {
+	width: 70px;
+	margin: 24px 0px;
+}
+
+.work-place {
+	margin-left: 142px;
+	margin-bottom: 100px;
+}
+
+.work-place .title {
+	color: var(--main-green);
+	font-size: 67px;
+	font-weight: 300;
+	line-height: 122%;
+	letter-spacing: -1.34px;
+	margin-bottom: 10px;
+}
+
+.work-place .title-mini {
+	color: var(--main-black);
+	font-size: 20px;
+	font-weight: 600;
+	line-height: 30px;
+	letter-spacing: 2px;
+	text-transform: uppercase;
+	margin: 0;
+}
+
+.work-place .slide {
+	margin-top: 50px;
+	position: relative;
+}
+
+.work-place .slide .owl-item {
+	/* width: 330px !important; */
+}
+
+.work-place .slide .item img {
+	width: 100%;
+}
+
+.work-place .slide .owl-nav {
+	position: absolute;
+	top: -71px;
+	right: 80px;
+	width: 72px;
+	display: flex;
+	justify-content: space-between;
+}
+
+.work-place .slide .owl-nav button {
+	color: var(--main-black);
+	border: 1px solid;
+	width: 24px;
+	height: 24px;
+	border-radius: 50%;
+}
+
+@media (max-width: 1400px) {
+	.standard .content .item .count {
+		font-size: 180px;
+	}
+
+	.standard .content .item .desc {
+		margin-left: 100px;
+	}
+
+	.standard .content .item {
+		padding-top: 140px;
+	}
+
+	.standard .content .item .line {
+		top: 100px;
+		left: 100px;
+	}
+
+	.jobModal .modal-dialog  {
+		margin-top: 80px;
+		max-width: 80%
+	}
+
+	.jobModal .btn-close-modal {
+		right: -100px;
+	}
+}
+
+@media (max-width: 1300px) {
+	.welcome {
+		width: 95%;
+	}
+
+	.welcome .desc {
+		width: 100%;
+	}
+
+	.policy .head .content {
+		width: auto;
+	}
+
+	.standard .content .item .count {
+		font-size: 160px;
+	}
+
+	.standard .content .item .desc {
+		margin-left: 80px;
+	}
+
+	.standard .content .item {
+		padding-top: 130px;
+	}
+
+	.standard .content .item .line {
+		top: 100px;
+		left: 85px;
+	}
+
+	.standard .content .item .line svg {
+		width: 90%;
+	}
+}
+
+@media (max-width: 1199px) {
+	.banner .content .title {
+		font-size: 48px;
+		width: 570px;
+	}
+
+	.welcome {
+		column-gap: 40px;
+	}
+
+	.welcome .title p {
+		font-size: 48px;
+		width: 390px;
+	}
+
+	.welcome .title p span {
+		font-size: 48px;
+	}
+
+	.opportunity {
+		padding-left: 24px;
+		padding-right: 24px;
+	}
+
+	.opportunity .title {
+		font-size: 48px;
+	}
+
+	.job {
+		width: 95%;
+	}
+
+	.job .list .item .title {
+		font-size: 18px;
+	}
+
+	.policy .head .title {
+		font-size: 48px;
+		width: 450px;
+	}
+
+	.policy .head .content {
+		bottom: -23px;
+		left: 350px;
+		font-size: 14px;
+	}
+
+	.policy .head .content::before {
+		width: 100px;
+		left: -118px;
+	}
+
+	.policy .list {
+		justify-content: space-between;
+	}
+
+	.policy .list .item {
+		width: 300px;
+	}
+
+	.policy .list .content .title {
+		font-size: 17px;
+	}
+
+	.increase {
+		padding-right: 24px;
+	}
+
+	.increase .head .title {
+		font-size: 48px;
+		width: 450px;
+		padding-left: 90px;
+	}
+
+	.increase .head .title::before {
+		width: 70px;
+	}
+
+	.increase .head .title::after {
+		left: 70px;
+	}
+
+	.standard .title {
+		width: 375px;
+	}
+
+	.standard .content {
+		flex-wrap: wrap;
+		row-gap: 24px;
+	}
+
+	.standard .content .item {
+		width: 49%;
+	}
+
+	.step .content img {
+		height: 450px;
+	}
+}
+
+@media (max-width: 991px) {
+	.margin-section {
+		margin-top: 60px;
+	}
+
+	.banner .content {
+		background-size: cover;
+	}
+
+	.banner .content .desc {
+		display: flex;
+		flex-direction: column;
+		align-items: start;
+		row-gap: 24px;
+	}
+
+	.banner .content .desc .btn-explore {
+		position: initial;
+		transform: unset
+	}
+
+	.welcome {
+		flex-direction: column;
+	}
+
+	.opportunity {
+		flex-direction: column;
+	}
+
+	.job .list .item {
+		width: 100%;
+	}
+
+	.policy {
+		padding: 0px;
+	}
+
+	.policy .head .title {
+		padding-left: 24px;
+	}
+
+	.policy .head .content {
+		position: initial;
+		padding-left: 80px;
+	}
+
+	.policy .head .content::before {
+		left: 0px;
+		top: 145px;
+		width: 60px;
+	}
+
+	.policy .head .content::after {
+		top: 140px;
+		left: 60px;
+	}
+
+	.policy .list {
+		padding-left: 80px;
+		flex-wrap: wrap;
+		padding-right: 24px;
+		row-gap: 36px;
+	}
+
+	.policy .list .item {
+		width: 100%;
+	}
+
+	.increase {
+		padding-right: 0px;
+	}
+
+	.increase .head {
+		flex-direction: column;
+	}
+
+	.increase .head .title {
+		padding-left: 24px;
+		width: 100%;
+	}
+
+	.increase .head .title span {
+		display: block;
+	}
+
+	.increase .head .title::before {
+		left: unset;
+		right: 0px;
+		top: 92px;
+		width: 65%;
+	}
+
+	.increase .head .title::after {
+		left: unset;
+		right: 65%;
+		top: 88px;
+	}
+
+	.increase .head .desc {
+		width: 100%;
+		padding: 0 24px;
+	}
+
+	.step {
+		margin-left: 24px;
+		margin-right: 24px;
+	}
+
+	.work-place {
+		margin-left: 24px;
+	}
+
+	.work-place .slide {
+		margin-top: 86px;
+	}
+
+	.work-place .slide .owl-nav {
+		top: -54px;
+		right: 4%;
+		width: 95%;
+	}
+
+	.jobModal .modal-dialog {
+		margin-top: 80px;
+		max-width: 90%
+	}
+
+	.jobModal .banner .content {
+		margin: 0;
+		padding: 26px 0px 24px 52px;
+	}
+
+	.jobModal .banner .content .title {
+		font-size: 36px;
+	}
+
+	.jobModal .banner .content .desc {
+		font-size: 17px;
+	}
+
+	.jobModal .job-detail {
+		flex-direction: column;
+		gap: 36px;
+	}
+
+	.jobModal .job-detail .left {
+		width: 100%;
+	}
+
+	.jobModal .job-detail .right {
+		width: 100%;
+	}
+
+	.jobModal .btn-close-modal {
+		top: -40px;
+		right: 50%;
+		transform: translateX(50%);
+	}
+}
+
+@media (max-width: 767px) {
+	.banner {
+		margin-top: 95px;
+	}
+
+	.banner .content {
+		padding: 24px 0px 68px 63px;
+	}
+
+	.banner .content .title {
+		font-size: 36px;
+		width: 280px;
+		line-height: 122%;
+	}
+
+	.welcome .title p,
+	.policy .head .title {
+		font-size: 42px;
+	}
+
+	.opportunity {
+		padding-top: 24px;
+		padding-bottom: 24px;
+	}
+
+	.opportunity .desc {
+		width: 420px;
+	}
+
+	.policy .head .content::before {
+		top: 127px;
+	}
+
+	.policy .head .content::after {
+		top: 123px;
+	}
+
+	.increase {
+		padding-bottom: 67px;
+	}
+
+	.increase .body {
+		width: 100%;
+	}
+
+	.increase .head .title::before {
+		width: 55%;
+	}
+
+	.increase .head .title::after {
+		right: 55%;
+	}
+
+	.increase .body {
+		height: auto;
+	}
+
+	.increase .body .content {
+		width: 550px;
+		margin-left: auto;
+		margin-right: auto;
+	}
+
+	.increase .body .content table tr {
+		height: 59px;
+	}
+
+	.increase .body .content table tr td.left {
+		padding-right: 10px;
+	}
+
+	.increase .body .content table tr td.right {
+		padding-left: 10px;
+	}
+
+	.standard .title {
+		font-size: 45px;
+	}
+
+	.standard .content .item {
+		width: 100%;
+		padding-top: 160px;
+	}
+
+	.standard .content .item .count {
+		font-size: 200px;
+	}
+
+	.standard .content .item .desc {
+		margin-left: 110px;
+	}
+
+	.standard .content .item .line svg {
+		transform: rotate(90deg);
+		position: absolute;
+		left: -82px;
+		bottom: -138px;
+		width: 140px;
+	}
+
+	.standard .content .item:last-child .line {
+		display: none;
+	}
+
+	.step .content img {
+		width: 100%;
+		height: 300px;
+	}
+
+	.step .content .block {
+		padding: 24px;
+		width: 298px;
+	}
+
+	.step .content .block svg {
+		margin: 16px 0px;
+	}
+
+	.work-place .title {
+		font-size: 48px;
+	}
+
+	.work-place .title-mini {
+		font-size: 17px;	
+	}
+}
+
+@media (max-width: 576px) {
+	.banner {
+		margin-top: 66px;
+		height: auto;
+	}
+
+	.welcome .title p {
+		width: 100%;
+	}
+
+	.welcome .title p,
+	.policy .head .title {
+		font-size: 40px;
+	}
+
+	.increase .head .title::before {
+		width: 45%;
+	}
+
+	.increase .head .title::after {
+		right: 45%;
+	}
+
+	.increase .body .content {
+		width: 430px;
+	}
+
+	.increase .body .content table tr {
+		height: 46px;
+	}
+
+	.increase .body .content table tr td {
+		font-size: 12px;
+		letter-spacing: 1.2px;
+	}
+
+	.increase .body .content table tr td.left {
+		width: 150px;
+		padding-right: 5px;
+	}
+
+	.increase .body .content table tr td.right {
+		width: 150px;
+		padding-left: 5px;
+	}
+
+	.step .content {
+		padding-bottom: 220px;
+	}
+
+	.step .content img {
+		height: 250px;
+	}
+
+	.step .content .block .title {
+		font-size: 18px;
+	}
+
+	.work-place .slide {
+		padding: 0px;
+	}
+
+	.jobModal .modal-dialog {
+		max-width: 100%;
+	}
+
+	.jobModal .banner .content {
+		padding: 26px 0px 24px 32px;
+	}
+}
+
+@media (max-width: 450px) {
+	.banner .content {
+		padding: 24px 0px 48px 43px;
+	}
+
+	.opportunity .desc {
+		width: 100%;
+	}
+
+	.opportunity .count .total {
+		font-size: 170px;
+	}
+
+	.opportunity .count .count-desc {
+		margin-left: 100px;
+	}
+
+	.opportunity .desc {
+		font-size: 18px;
+		letter-spacing: 1px;
+		line-height: 24px;
+	}
+
+	.job .list {
+		margin-bottom: 36px;
+	}
+
+	.job .list .item {
+		padding: 24px;
+	}
+
+	.job .list .item .location {
+		width: 100%;
+	}
+
+	.policy .head .title {
+		width: 100%;
+	}
+
+	.policy .head .content::before {
+		top: 122px;
+	}
+
+	.policy .head .content::after {
+		top: 118px;
+	}
+
+	.increase .head .title::before {
+		width: 35%;
+	}
+
+	.increase .head .title::after {
+		right: 35%;
+	}
+
+	.increase .body .content {
+		width: 370px;
+		padding-top: 80px;
+	}
+
+	.increase .body .content table tr {
+		height: 40px;
+	}
+
+	.increase .body .content table tr td {
+		line-height: 16px;
+		font-size: 10px;	
+	}
+
+	.increase .body .content table tr td.left,
+	.increase .body .content table tr td.right {
+		width: 100px;
+	}
+
+	.standard .title {
+		width: 100%;
+		font-size: 42px;
+	}
+}
+
+@media (max-width: 380px) {
+	.banner {
+		margin-top: 65px;
+	}
+	
+	.banner .content .title {
+		width: 100%;
+		font-size: 32px;
+	}
+
+	.welcome .title p,
+	.policy .head .title,
+	.opportunity .title {
+		font-size: 33px;
+	}
+
+	.opportunity .count {
+		padding-top: 110px;
+	}
+
+	.opportunity .count .total {
+		font-size: 135px;
+	}
+
+	.opportunity .count .count-desc {
+		margin-left: 45px;
+	}
+
+	.job .list .item .location p {
+		font-size: 12px;
+	}
+
+	.job .list .item .salary {
+		font-size: 13px;
+	}
+
+	.policy .head .content::before {
+		top: 108px;
+	}
+
+	.policy .head .content::after {
+		top: 104px;
+	}
+
+	.increase .head .title {
+		font-size: 38px;
+	}
+
+	.increase .head .title::before {
+		top: 73px;
+	}
+
+	.increase .head .title::after {
+		top: 69px;
+	}
+
+	.increase .body .content {
+		width: 310px;
+	}
+
+	.increase .body .content table tr {
+		height: 33px;
+	}
+
+	.increase .body .content table tr td {
+		font-size: 8px;
+	}
+
+	.standard .title {
+		font-size: 34px;
+	}
+
+	.standard .content .item .count {
+		font-size: 180px;
+	}
+
+	.standard .content .item {
+		padding-top: 140px;
+	}
+
+	.standard .content .item .desc {
+		margin-left: 80px;
+	}
+
+	.standard .content .item .desc .item-desc {
+		width: 100%;
+	}
+
+	.standard .content .item .line svg {
+		left: -100px;
+		bottom: -132px;
+		width: 160px;
+	}
+
+	.step .content .block {
+		width: 100%;
+	}
+
+	.work-place .title {
+		font-size: 38px;
+	}
+
+	.work-place .title-mini {
+		font-size: 14px;
+	}
+
+	.jobModal .banner .content .title {
+		font-size: 32px;
+		width: 100%;
+	}
+}
