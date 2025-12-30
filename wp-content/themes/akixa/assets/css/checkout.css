@@ -314,6 +314,16 @@ header .logo img {
 }
 
 @media (max-width: 768px) {
+	#payment-info-content {
+		flex-direction: column;
+	}
+
+	.qr-image {
+		max-width: 250px;
+	}
+}
+
+@media (max-width: 768px) {
 	.checkout-form-wrapper {
 		grid-template-columns: 1fr;
 		margin-top: 0px;
@@ -361,5 +371,9 @@ header .logo img {
 	.checkout-product-info .price {
 		font-size: 24px;
 		margin-bottom: 8px;
+	}
+
+	.qr-image {
+		max-width: 200px;
 	}
 }

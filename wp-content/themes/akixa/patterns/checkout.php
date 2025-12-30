@@ -90,9 +90,11 @@
 				<div id="payment-info-content">
 					<!-- Content will be inserted here via AJAX -->
 				</div>
-				<button type="button" id="confirm-payment-btn" class="confirm-payment-btn">
-					Xác nhận đã thanh toán
-				</button>
+				<div class="text-center">
+					<button type="button" id="confirm-payment-btn" class="confirm-payment-btn">
+						Xác nhận đã thanh toán
+					</button>
+				</div>
 			</div>
 		</div>
 		

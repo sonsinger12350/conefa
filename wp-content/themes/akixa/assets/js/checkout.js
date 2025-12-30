@@ -45,6 +45,11 @@ jQuery(document).ready(function ($) {
 				submitBtn.prop('disabled', false).html(btnHtml);
 
 				if (response.success && response.data) {
+					// Save order ID to cookie
+					if (response.data.order_id) {
+						saveOrderIdToCookie(response.data.order_id);
+					}
+					
 					// Hide form and show payment info
 					$('.checkout-form-wrapper').hide();
 					showPaymentInfo(response.data);
@@ -68,9 +73,49 @@ jQuery(document).ready(function ($) {
 		var re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 		return re.test(email);
 	}
+	
+	// Cookie utility functions
+	function setCookie(name, value, days) {
+		var expires = '';
+		if (days) {
+			var date = new Date();
+			date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+			expires = '; expires=' + date.toUTCString();
+		}
+		document.cookie = name + '=' + (value || '') + expires + '; path=/';
+	}
+	
+	function getCookie(name) {
+		var nameEQ = name + '=';
+		var ca = document.cookie.split(';');
+		for (var i = 0; i < ca.length; i++) {
+			var c = ca[i];
+			while (c.charAt(0) === ' ') c = c.substring(1, c.length);
+			if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
+		}
+		return null;
+	}
+	
+	function deleteCookie(name) {
+		document.cookie = name + '=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+	}
+	
+	function saveOrderIdToCookie(orderId) {
+		if (orderId) {
+			setCookie(COOKIE_NAME, orderId.toString(), COOKIE_EXPIRY_DAYS);
+		}
+	}
+	
+	function getOrderIdFromCookie() {
+		return getCookie(COOKIE_NAME);
+	}
 
 	var currentOrderId = null;
 	var currentDownloads = [];
+	var orderStatusInterval = null;
+	var isCheckingStatus = false;
+	var COOKIE_NAME = 'checkout_order_id';
+	var COOKIE_EXPIRY_DAYS = 365;
 
 	function updateStep(stepNumber) {
 		// Remove active from all steps
@@ -90,9 +135,17 @@ jQuery(document).ready(function ($) {
 		var content = $('#payment-info-content');
 
 		currentOrderId = data.order_id;
+		
+		// Save order ID to cookie if not already saved
+		if (currentOrderId) {
+			saveOrderIdToCookie(currentOrderId);
+		}
 
 		// Update step to 2
 		updateStep(2);
+		
+		// Start auto-checking order status every 5 seconds
+		startOrderStatusCheck();
 
 		var bankLogoHtml = '';
 		if (data.bank_logo_url) {
@@ -145,14 +198,18 @@ jQuery(document).ready(function ($) {
 		}, 500);
 	}
 
-	// Handle confirm payment button
-	$('#confirm-payment-btn').on('click', function () {
-		if (!currentOrderId) return;
-
-		var btn = $(this);
+	// Function to check order status
+	function checkOrderStatus(showButtonLoading) {
+		if (!currentOrderId || isCheckingStatus) return;
+		
+		isCheckingStatus = true;
+		var btn = $('#confirm-payment-btn');
 		var btnHtml = btn.html();
-
-		btn.prop('disabled', true).html('<i class="fas fa-spinner fa-pulse"></i> Đang kiểm tra...');
+		
+		// Show loading on button if requested
+		if (showButtonLoading) {
+			btn.prop('disabled', true).html('<i class="fas fa-spinner fa-pulse"></i> Đang kiểm tra...');
+		}
 
 		$.ajax({
 			url: adminAjaxUrl,
@@ -163,8 +220,22 @@ jQuery(document).ready(function ($) {
 				order_id: currentOrderId
 			},
 			success: function (response) {
+				isCheckingStatus = false;
+				
+				if (showButtonLoading) {
+					btn.prop('disabled', false).html(btnHtml);
+				}
+				
 				if (response.success && response.data) {
-					if (response.data.status === 'completed') {
+					if (response.data.status === 'completed' || response.data.status === 'processing') {
+						// Order is completed, stop interval and show thank you
+						stopOrderStatusCheck();
+						
+						// Keep order ID in cookie even after completion for tracking
+						if (currentOrderId) {
+							saveOrderIdToCookie(currentOrderId);
+						}
+						
 						// Order is completed, show thank you and download files
 						$('#payment-info-section').removeClass('active');
 						$('#thank-you-section').addClass('active');
@@ -211,20 +282,66 @@ jQuery(document).ready(function ($) {
 						}, 500);
 					} else {
 						// Order not completed yet
-						btn.prop('disabled', false).html(btnHtml);
-						alert('Đơn hàng chưa được xác nhận thanh toán. Vui lòng đợi thêm một chút và thử lại.');
+						if (showButtonLoading) {
+							alert('Đơn hàng chưa được xác nhận thanh toán. Vui lòng đợi thêm một chút và thử lại.');
+						}
 					}
 				} else {
-					btn.prop('disabled', false).html(btnHtml);
-					var errorMsg = response.data && response.data.message ? response.data.message : 'Có lỗi xảy ra. Vui lòng thử lại.';
-					alert(errorMsg);
+					if (showButtonLoading) {
+						var errorMsg = response.data && response.data.message ? response.data.message : 'Có lỗi xảy ra. Vui lòng thử lại.';
+						alert(errorMsg);
+					}
 				}
 			},
 			error: function () {
-				btn.prop('disabled', false).html(btnHtml);
-				alert('Có lỗi xảy ra khi kết nối server. Vui lòng thử lại.');
+				isCheckingStatus = false;
+				
+				if (showButtonLoading) {
+					btn.prop('disabled', false).html(btnHtml);
+					alert('Có lỗi xảy ra khi kết nối server. Vui lòng thử lại.');
+				}
 			}
 		});
+	}
+	
+	// Start auto-checking order status
+	function startOrderStatusCheck() {
+		// Clear any existing interval
+		stopOrderStatusCheck();
+		
+		// Start checking every 5 seconds
+		orderStatusInterval = setInterval(function() {
+			checkOrderStatus(false); // Don't show button loading for auto checks
+		}, 5000);
+	}
+	
+	// Stop auto-checking order status
+	function stopOrderStatusCheck() {
+		if (orderStatusInterval) {
+			clearInterval(orderStatusInterval);
+			orderStatusInterval = null;
+		}
+	}
+
+	// Handle confirm payment button (manual check)
+	$('body').on('click', '#confirm-payment-btn', function () {
+		if (!currentOrderId) return;
+		checkOrderStatus(true); // Show button loading for manual check
+	});
+	
+	// Stop interval when page is hidden or user navigates away
+	$(window).on('beforeunload', function() {
+		stopOrderStatusCheck();
+	});
+	
+	// Stop interval when page becomes hidden
+	document.addEventListener('visibilitychange', function() {
+		if (document.hidden) {
+			stopOrderStatusCheck();
+		} else if (currentOrderId && $('#payment-info-section').hasClass('active')) {
+			// Resume checking if payment section is still active
+			startOrderStatusCheck();
+		}
 	});
 
 	function showDownloadButtons() {
