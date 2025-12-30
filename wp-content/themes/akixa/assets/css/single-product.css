@@ -16,8 +16,17 @@ header .logo img {
 }
 
 .page {
+	padding: 24px;
 	margin-top: 79px;
 	min-height: 51vh;
+}
+
+.breadcrumb {
+	margin-bottom: 0px;
+}
+
+.breadcrumb p {
+	margin-bottom: 0px;
 }
 
 .breadcrumb a {

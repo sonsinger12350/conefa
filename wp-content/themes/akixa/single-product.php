@@ -15,7 +15,7 @@
 
 	$category_ids = $product->get_category_ids();
 	$category = !empty($category_ids[0]) ? get_term( $category_ids[0], 'product_cat' ) : [];
-	$tag_ids = $product->get_tag_ids();;
+	$tag_ids = $product->get_tag_ids();
 
 	$cf_data = get_post_meta($product_id);
 	$cf_product = array_map(function($value) {
@@ -59,7 +59,10 @@
 <div class="page">
 	<div class="breadcrumb">
 		<?php
-			if ( function_exists('yoast_breadcrumb') ) {
+			if ( function_exists('rank_math_the_breadcrumbs') ) {
+				rank_math_the_breadcrumbs();
+			} 
+			elseif ( function_exists('yoast_breadcrumb') ) {
 				yoast_breadcrumb();
 			}
 		?>

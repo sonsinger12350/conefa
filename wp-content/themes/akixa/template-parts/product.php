@@ -23,12 +23,11 @@
 			</div>
 			<a class="name" href="<?= $product->get_permalink() ?>"><?= $product->get_name() ?></a>
 			<p class="price mb-3"><?= !empty($product->get_price()) ? wc_price($product->get_price()) : 'Liên hệ' ?></p>
-			<!-- <div class="btn-buy">
+			<div class="btn-buy">
 				<?php if (!empty($product->get_price())): ?>
-					<button class="btn btn-outline-dark btn-sm" type="button"><i class="fa-solid fa-cart-shopping"></i> Thêm vào giỏ hàng</button>
-					<button class="btn btn-dark" type="button">Mua ngay</button>
+					<a class="btn btn-dark" href="<?= home_url('thanh-toan?id='.$product_id) ?>">Mua ngay</a>
 				<?php endif ?>
-			</div> -->
+			</div>
 		</div>
 	</div>
 </div>

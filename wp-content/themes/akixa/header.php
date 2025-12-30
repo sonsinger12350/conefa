@@ -74,6 +74,8 @@
 	$logoWhite = get_template_directory_uri()."/assets/images/logo-white.png?v=1";
 	$logo = $logoBlack;
 
+	$categories_tree = get_product_categories_tree();
+
 	if ($isHeader2) $logo = $logoWhite;
 
 	$config = getConnestConfig();
@@ -129,7 +131,7 @@
 </head>
 
 <body <?= body_class($body_class); ?>>
-	<header class="<?= $isHeader2 ? 'scroll-down header-2' : ''?>">
+<header class="<?= $isHeader2 ? 'scroll-down header-2' : ''?>">
 		<a class="logo d-block" href="<?= home_url() ?>">
 			<img src="<?= $logo ?>" alt="<?= $websiteName ?>" data-black="<?= $logoBlack ?>" data-white="<?= $logoWhite ?>">
 		</a>
@@ -144,6 +146,29 @@
 						)
 					);
 				?>
+				<?php if (!empty($categories_tree)): ?>
+					<h5 class="title-category"><span>Danh mục sản phẩm</span> <i class="fa-solid fa-bars"></i></h5>
+					<div class="category-tree">
+						<ul class="parent-element">
+							<?php foreach ($categories_tree as $cat): ?>
+								<li class="cat-item cat-parent">
+									<a href="<?= $cat['link'] ?>" class="link-parent"><?= $cat['image'] ?><?= $cat['name'] ?></a>
+									<?php if (!empty($cat['children'])): ?>
+										<div class="children-categories">
+											<ul>
+												<?php foreach ($cat['children'] as $child): ?>
+													<li class="cat-item cat-children">
+														<a href="<?= $child['link'] ?>" class="link-children"><?= $child['name'] ?></a>
+													</li>
+												<?php endforeach ?>
+											</ul>
+										</div>
+									<?php endif ?>
+								</li>
+							<?php endforeach ?>
+						</ul>
+					</div>
+				<?php endif ?>
 			</div>
 			<?php if (!$isHeader2): ?>
 				<div class="content">
@@ -157,6 +182,7 @@
 				<i class="fa-solid fa-bars"></i>
 				<i class="fa-solid fa-xmark"></i>
 			</a>
+			<a href="javascript:void(0)" class="open-category-mobile d-md-none">Mẫu thiết kế <i class="fa-solid fa-bars"></i></a>
 			<a href="javascript:void(0)" class="open-menu-mobile d-md-none">Menu <i class="fa-solid fa-bars"></i><i class="fa-solid fa-xmark"></i></a>
 		</div>
 
@@ -174,5 +200,29 @@
 			</div>
 		</div>
 		<div class="menu-mobile-overlay"></div>
+
+		<?php if (!empty($categories_tree)): ?>
+			<div class="category-tree-mobile">
+				<ul class="parent-element">
+					<?php foreach ($categories_tree as $cat): ?>
+						<li class="cat-item cat-parent">
+							<a href="<?= $cat['link'] ?>" class="link-parent"><?= $cat['image'] ?><?= $cat['name'] ?></a>
+							<?php if (!empty($cat['children'])): ?>
+								<i class="fa-solid fa-plus open-children-categories"></i>
+								<div class="children-categories">
+									<ul>
+										<?php foreach ($cat['children'] as $child): ?>
+											<li class="cat-item cat-children">
+												<a href="<?= $child['link'] ?>" class="link-children"><?= $child['name'] ?></a>
+											</li>
+										<?php endforeach ?>
+									</ul>
+								</div>
+							<?php endif ?>
+						</li>
+					<?php endforeach ?>
+				</ul>
+			</div>
+		<?php endif ?>
 	</header>
 	<div class="box-overlay"></div>

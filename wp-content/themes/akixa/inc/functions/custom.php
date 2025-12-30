@@ -44,6 +44,85 @@ function get_product_near( $id, $type ) {
 	return $result[0];
 }
 
+function get_product_categories_tree() {
+    $args = array(
+        'taxonomy'   => 'product_cat',
+        'hide_empty' => true,
+        'parent'     => 0,
+    );
+
+    $categories_lv1 = get_terms($args);
+    $categories_tree = [];
+
+    if (!empty($categories_lv1) && !is_wp_error($categories_lv1)) {
+        foreach ($categories_lv1 as $category_lv1) {
+            $args_lv2 = array(
+                'taxonomy'   => 'product_cat',
+                'hide_empty' => false,
+                'parent'     => $category_lv1->term_id,
+            );
+
+            $image_id_lv1 = get_term_meta($category_lv1->term_id, 'thumbnail_id', true);
+            $image_lv1 = !empty($image_id_lv1) ? wp_get_attachment_image($image_id_lv1, 'thumbnail') : '';
+
+            $categories_lv2 = get_terms($args_lv2);
+
+            $categories_tree[$category_lv1->term_id] = array(
+                'id'       => $category_lv1->term_id,
+                'name'     => $category_lv1->name,
+                'slug'     => $category_lv1->slug,
+                'count'    => $category_lv1->count,
+                'image'    => $image_lv1,
+                'link'     => get_term_link($category_lv1->term_id, 'product_cat'),
+                'children' => []
+            );
+
+            if (!empty($categories_lv2) && !is_wp_error($categories_lv2)) {
+                foreach ($categories_lv2 as $category_lv2) {
+                    $args_lv3 = array(
+                        'taxonomy'   => 'product_cat',
+                        'hide_empty' => false,
+                        'parent'     => $category_lv2->term_id,
+                    );
+
+                    $image_id_lv2 = get_term_meta($category_lv2->term_id, 'thumbnail_id', true);
+                    $image_lv2 = !empty($image_id_lv2) ? wp_get_attachment_image($image_id_lv2, 'thumbnail') : '';
+
+                    $categories_lv3 = get_terms($args_lv3);
+
+                    $categories_tree[$category_lv1->term_id]['children'][$category_lv2->term_id] = array(
+                        'id'       => $category_lv2->term_id,
+                        'name'     => $category_lv2->name,
+                        'slug'     => $category_lv2->slug,
+                        'count'    => $category_lv2->count,
+                        'image'    => $image_lv2,
+                        'link'     => get_term_link($category_lv2->term_id, 'product_cat'),
+                        'children' => []
+                    );
+
+                    if (!empty($categories_lv3) && !is_wp_error($categories_lv3)) {
+                        foreach ($categories_lv3 as $category_lv3) {
+                            $image_id_lv3 = get_term_meta($category_lv3->term_id, 'thumbnail_id', true);
+                            $image_lv3 = !empty($image_id_lv3) ? wp_get_attachment_image($image_id_lv3, 'thumbnail') : '';
+
+                            $categories_tree[$category_lv1->term_id]['children'][$category_lv2->term_id]['children'][$category_lv3->term_id] = array(
+                                'id'    => $category_lv3->term_id,
+                                'name'  => $category_lv3->name,
+                                'slug'  => $category_lv3->slug,
+                                'count' => $category_lv3->count,
+                                'image' => $image_lv3,
+                                'link'  => get_term_link($category_lv3->term_id, 'product_cat'),
+                            );
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    return $categories_tree;
+}
+
 function getMinMaxSizeProduct() {
 	global $wpdb;
 

@@ -71,6 +71,205 @@
 	add_action('wp_ajax_load_posts', 'ajax_load_posts');
 	add_action('wp_ajax_nopriv_load_posts', 'ajax_load_posts');
 
+	// AJAX handler for checkout
+	function ajax_create_checkout_order() {
+		check_ajax_referer('checkout_nonce', 'nonce');
+		
+		$product_id = isset($_POST['product_id']) ? intval($_POST['product_id']) : 0;
+		$customer_name = isset($_POST['customer_name']) ? sanitize_text_field($_POST['customer_name']) : '';
+		$customer_email = isset($_POST['customer_email']) ? sanitize_email($_POST['customer_email']) : '';
+		
+		if (empty($product_id) || empty($customer_name) || empty($customer_email) || !is_email($customer_email)) {
+			wp_send_json_error(['message' => 'Vui lòng điền đầy đủ thông tin hợp lệ.']);
+		}
+		
+		$product = wc_get_product($product_id);
+		if (!$product || !$product->is_purchasable()) {
+			wp_send_json_error(['message' => 'Sản phẩm không hợp lệ hoặc không thể mua.']);
+		}
+		
+		// Create WooCommerce order
+		$order = wc_create_order();
+		
+		if (is_wp_error($order)) {
+			wp_send_json_error(['message' => 'Không thể tạo đơn hàng. Vui lòng thử lại.']);
+		}
+		
+		// Add product to order
+		$order->add_product($product, 1);
+		
+		// Set billing information
+		$order->set_billing_first_name($customer_name);
+		$order->set_billing_email($customer_email);
+		$order->set_billing_phone('');
+		
+		// Set order status
+		$order->set_status('on-hold', 'Đơn hàng đang chờ thanh toán');
+		$order->set_payment_method('sepay');
+		$order->set_payment_method_title('Chuyển khoản ngân hàng');
+		
+		// Calculate totals
+		$order->calculate_totals();
+		$order->save();
+		
+		$order_id = $order->get_id();
+		
+		// Get Sepay gateway
+		$gateways = WC()->payment_gateways->get_available_payment_gateways();
+		$sepay_gateway = isset($gateways['sepay']) ? $gateways['sepay'] : null;
+		
+		$sepay_data = [];
+		
+		if ($sepay_gateway && $sepay_gateway instanceof WC_Gateway_SePay) {
+			// Get remark using public method
+			$remark = $sepay_gateway->get_remark($order_id);
+			
+			$account_number = '';
+			$account_holder_name = '';
+			$bank_bin = '';
+			$bank_logo_url = '';
+			$displayed_bank_name = '';
+			
+			// Get bank account data using public method
+			$bank_account_data = $sepay_gateway->get_bank_account_data();
+			
+			// Check if we have bank account data from API
+			if ($bank_account_data) {
+				$bank_account_id = $sepay_gateway->get_option('bank_account');
+				
+				// Try to get bank account via API
+				$api = new WC_SePay_API();
+				$bank_account = null;
+				if ($api->is_connected() && $bank_account_id) {
+					$bank_account = $api->get_bank_account($bank_account_id);
+				}
+				
+				if ($bank_account) {
+					$required_sub_account_banks = ['BIDV', 'OCB', 'MSB', 'KienLongBank'];
+					$bank_short_name = $bank_account_data['bank']['short_name'];
+					
+					if (in_array($bank_short_name, $required_sub_account_banks)) {
+						$account_number = $sepay_gateway->get_option('sub_account');
+						if (empty($account_number)) {
+							$account_number = $bank_account['account_number'];
+						}
+					} else {
+						$account_number = $sepay_gateway->get_option('sub_account') ? $sepay_gateway->get_option('sub_account') : $bank_account['account_number'];
+					}
+					
+					$account_holder_name = $bank_account_data['account_holder_name'];
+					$bank_bin = $bank_account_data['bank']['bin'];
+					$bank_logo_url = $bank_account_data['bank']['logo_url'];
+					$displayed_bank_name = $sepay_gateway->displayed_bank_name;
+				} else {
+					// Use data from bank_account_data directly
+					$account_number = $bank_account_data['account_number'] ?? $sepay_gateway->get_option('bank_account_number');
+					$account_holder_name = $bank_account_data['account_holder_name'] ?? $sepay_gateway->get_option('bank_account_holder');
+					$bank_bin = $bank_account_data['bank']['bin'] ?? '';
+					$bank_logo_url = $bank_account_data['bank']['logo_url'] ?? '';
+					$displayed_bank_name = $sepay_gateway->displayed_bank_name;
+				}
+			}
+			
+			// Fallback to manual settings if no API connection
+			if (empty($account_number) || empty($bank_bin)) {
+				// Fallback to manual settings - replicate bank data array
+				$bank_data = array(
+					'vietcombank' => array('bin' => '970436', 'code' => 'VCB', 'short_name' => 'Vietcombank', 'full_name' => 'Ngân hàng TMCP Ngoại Thương Việt Nam'),
+					'vpbank' => array('bin' => '970432', 'code' => 'VPB', 'short_name' => 'VPBank', 'full_name' => 'Ngân hàng TMCP Việt Nam Thịnh Vượng'),
+					'acb' => array('bin' => '970416', 'code' => 'ACB', 'short_name' => 'ACB', 'full_name' => 'Ngân hàng TMCP Á Châu'),
+					'sacombank' => array('bin' => '970403', 'code' => 'STB', 'short_name' => 'Sacombank', 'full_name' => 'Ngân hàng TMCP Sài Gòn Thương Tín'),
+					'hdbank' => array('bin' => '970437', 'code' => 'HDB', 'short_name' => 'HDBank', 'full_name' => 'Ngân hàng TMCP Phát triển Thành phố Hồ Chí Minh'),
+					'vietinbank' => array('bin' => '970415', 'code' => 'ICB', 'short_name' => 'VietinBank', 'full_name' => 'Ngân hàng TMCP Công thương Việt Nam'),
+					'techcombank' => array('bin' => '970407', 'code' => 'TCB', 'short_name' => 'Techcombank', 'full_name' => 'Ngân hàng TMCP Kỹ thương Việt Nam'),
+					'mbbank' => array('bin' => '970422', 'code' => 'MB', 'short_name' => 'MBBank', 'full_name' => 'Ngân hàng TMCP Quân đội'),
+					'bidv' => array('bin' => '970418', 'code' => 'BIDV', 'short_name' => 'BIDV', 'full_name' => 'Ngân hàng TMCP Đầu tư và Phát triển Việt Nam'),
+					'msb' => array('bin' => '970426', 'code' => 'MSB', 'short_name' => 'MSB', 'full_name' => 'Ngân hàng TMCP Hàng Hải Việt Nam'),
+					'shinhanbank' => array('bin' => '970424', 'code' => 'SHBVN', 'short_name' => 'ShinhanBank', 'full_name' => 'Ngân hàng TNHH MTV Shinhan Việt Nam'),
+					'tpbank' => array('bin' => '970423', 'code' => 'TPB', 'short_name' => 'TPBank', 'full_name' => 'Ngân hàng TMCP Tiên Phong'),
+					'eximbank' => array('bin' => '970431', 'code' => 'EIB', 'short_name' => 'Eximbank', 'full_name' => 'Ngân hàng TMCP Xuất Nhập khẩu Việt Nam'),
+					'vib' => array('bin' => '970441', 'code' => 'VIB', 'short_name' => 'VIB', 'full_name' => 'Ngân hàng TMCP Quốc tế Việt Nam'),
+					'agribank' => array('bin' => '970405', 'code' => 'VBA', 'short_name' => 'Agribank', 'full_name' => 'Ngân hàng Nông nghiệp và Phát triển Nông thôn Việt Nam'),
+					'publicbank' => array('bin' => '970439', 'code' => 'PBVN', 'short_name' => 'PublicBank', 'full_name' => 'Ngân hàng TNHH MTV Public Việt Nam'),
+					'kienlongbank' => array('bin' => '970452', 'code' => 'KLB', 'short_name' => 'KienLongBank', 'full_name' => 'Ngân hàng TMCP Kiên Long'),
+					'ocb' => array('bin' => '970448', 'code' => 'OCB', 'short_name' => 'OCB', 'full_name' => 'Ngân hàng TMCP Phương Đông'),
+					'abbank' => array('bin' => '970425', 'code' => 'ABBANK', 'short_name' => 'ABBANK', 'full_name' => 'Ngân hàng TMCP An Bình'),
+				);
+				
+				$bank_select = $sepay_gateway->get_option('bank_select');
+				$bank_info = null;
+				
+				if (isset($bank_data[$bank_select])) {
+					$bank_info = $bank_data[$bank_select];
+				} else {
+					foreach ($bank_data as $key => $bank) {
+						if (
+							strtolower($bank['code']) === strtolower($bank_select) ||
+							$bank['bin'] === $bank_select ||
+							$bank['short_name'] === $bank_select ||
+							strtolower($bank['short_name']) === strtolower($bank_select)
+						) {
+							$bank_info = $bank;
+							break;
+						}
+					}
+				}
+				
+				$account_number = $sepay_gateway->get_option('sub_account') ? $sepay_gateway->get_option('sub_account') : $sepay_gateway->get_option('bank_account_number');
+				$account_holder_name = $sepay_gateway->get_option('bank_account_holder');
+				
+				if ($bank_info) {
+					$bank_bin = $bank_info['bin'];
+					$bank_logo_url = sprintf('https://my.sepay.vn/assets/images/banklogo/%s.png', strtolower($bank_info['short_name']));
+					
+					$bank_name_display_type = $sepay_gateway->get_option('show_bank_name');
+					if ($bank_name_display_type == "brand_name") {
+						$displayed_bank_name = $bank_info['short_name'];
+					} else if ($bank_name_display_type == "full_name") {
+						$displayed_bank_name = $bank_info['full_name'];
+					} else if ($bank_name_display_type == "full_include_brand") {
+						$displayed_bank_name = $bank_info['full_name'] . " (" . $bank_info['short_name'] . ")";
+					} else {
+						$displayed_bank_name = $bank_info['short_name'];
+					}
+				}
+			}
+			
+			// Generate QR code URL
+			if (!empty($account_number) && !empty($bank_bin)) {
+				$qr_code_url = sprintf(
+					'https://qr.sepay.vn/img?acc=%s&bank=%s&amount=%s&des=%s&template=compact',
+					urlencode($account_number),
+					urlencode($bank_bin),
+					$order->get_total(),
+					urlencode($remark)
+				);
+				
+				$sepay_data = [
+					'qr_code_url' => $qr_code_url,
+					'account_number' => $account_number,
+					'account_holder_name' => $account_holder_name,
+					'bank_bin' => $bank_bin,
+					'bank_logo_url' => $bank_logo_url,
+					'displayed_bank_name' => $displayed_bank_name,
+					'amount' => $order->get_total(),
+					'amount_formatted' => wc_price($order->get_total()),
+					'remark' => $remark,
+					'order_id' => $order_id
+				];
+			}
+		}
+		
+		if (empty($sepay_data)) {
+			wp_send_json_error(['message' => 'Không thể lấy thông tin thanh toán. Vui lòng kiểm tra cấu hình Sepay.']);
+		}
+		
+		wp_send_json_success($sepay_data);
+	}
+	
+	add_action('wp_ajax_create_checkout_order', 'ajax_create_checkout_order');
+	add_action('wp_ajax_nopriv_create_checkout_order', 'ajax_create_checkout_order');
+
 	add_filter( 'manage_edit-product_columns', 'add_custom_product_column', 10 );
 	function add_custom_product_column( $columns ) {
 		$new_columns = array();
