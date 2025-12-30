@@ -31,131 +31,26 @@
 		return $value[0];
 	}, $cf_data);
 ?>
-<style>
-	.checkout-page {
-		padding: 40px 0;
-	}
-	.checkout-form-wrapper {
-		display: grid;
-		grid-template-columns: 1fr 1fr;
-		gap: 40px;
-		margin-top: 40px;
-	}
-	.checkout-form {
-		background: #fff;
-		padding: 30px;
-		border-radius: 8px;
-		box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-	}
-	.checkout-product-info {
-		background: #f8f9fa;
-		padding: 30px;
-		border-radius: 8px;
-	}
-	.checkout-form .form-group {
-		margin-bottom: 20px;
-	}
-	.checkout-form label {
-		display: block;
-		margin-bottom: 8px;
-		font-weight: 600;
-		color: #333;
-	}
-	.checkout-form input[type="text"],
-	.checkout-form input[type="email"] {
-		width: 100%;
-		padding: 12px;
-		border: 1px solid #ddd;
-		border-radius: 4px;
-		font-size: 16px;
-	}
-	.checkout-form button {
-		width: 100%;
-		padding: 12px;
-		background: #000;
-		color: #fff;
-		border: none;
-		border-radius: 4px;
-		font-size: 16px;
-		font-weight: 600;
-		cursor: pointer;
-		transition: background 0.3s;
-	}
-	.checkout-form button:hover:not(:disabled) {
-		background: #333;
-	}
-	.checkout-form button:disabled {
-		opacity: 0.6;
-		cursor: not-allowed;
-	}
-	.checkout-product-info img {
-		width: 100%;
-		height: auto;
-		border-radius: 8px;
-		margin-bottom: 20px;
-	}
-	.checkout-product-info h3 {
-		margin-bottom: 15px;
-		font-size: 24px;
-	}
-	.checkout-product-info .price {
-		font-size: 28px;
-		font-weight: bold;
-		color: #000;
-		margin-bottom: 20px;
-	}
-	.modal-qr {
-		display: none;
-		position: fixed;
-		z-index: 10000;
-		left: 0;
-		top: 0;
-		width: 100%;
-		height: 100%;
-		background-color: rgba(0,0,0,0.7);
-	}
-	.modal-qr.active {
-		display: flex;
-		align-items: center;
-		justify-content: center;
-	}
-	.modal-qr-content {
-		background: #fff;
-		padding: 40px;
-		border-radius: 8px;
-		max-width: 600px;
-		width: 90%;
-		max-height: 90vh;
-		overflow-y: auto;
-		position: relative;
-	}
-	.modal-qr-close {
-		position: absolute;
-		top: 15px;
-		right: 15px;
-		font-size: 28px;
-		cursor: pointer;
-		color: #999;
-	}
-	.modal-qr-close:hover {
-		color: #000;
-	}
-	.qr-image {
-		width: 100%;
-		max-width: 300px;
-		margin: 20px auto;
-		display: block;
-	}
-	@media (max-width: 768px) {
-		.checkout-form-wrapper {
-			grid-template-columns: 1fr;
-		}
-	}
-</style>
-
+<link rel="stylesheet" href="<?= get_template_directory_uri(); ?>/assets/css/checkout.css">
 <div class="checkout-page margin-section">
 	<div class="container">
 		<h1 class="title text-center mb-4">Thanh toán</h1>
+		
+		<!-- Checkout Steps -->
+		<div class="checkout-steps">
+			<div class="checkout-step active" id="step-1">
+				<div class="step-number">1</div>
+				<div class="step-label">Nhập thông tin</div>
+			</div>
+			<div class="checkout-step" id="step-2">
+				<div class="step-number">2</div>
+				<div class="step-label">Thanh toán</div>
+			</div>
+			<div class="checkout-step" id="step-3">
+				<div class="step-number">3</div>
+				<div class="step-label">Thành công</div>
+			</div>
+		</div>
 		
 		<div class="checkout-form-wrapper">
 			<div class="checkout-form">
@@ -187,16 +82,29 @@
 				<?php endif ?>
 			</div>
 		</div>
-	</div>
-</div>
-
-<!-- Modal QR Code -->
-<div class="modal-qr" id="qr-modal">
-	<div class="modal-qr-content">
-		<span class="modal-qr-close" onclick="closeQRModal()">&times;</span>
-		<h2 style="margin-bottom: 20px;">Thanh toán qua chuyển khoản ngân hàng</h2>
-		<div id="qr-modal-content">
-			<!-- Content will be inserted here via AJAX -->
+		
+		<!-- Payment Info Section -->
+		<div class="payment-info-section" id="payment-info-section">
+			<div class="payment-info-box">
+				<h2>Thông tin chuyển khoản</h2>
+				<div id="payment-info-content">
+					<!-- Content will be inserted here via AJAX -->
+				</div>
+				<button type="button" id="confirm-payment-btn" class="confirm-payment-btn">
+					Xác nhận đã thanh toán
+				</button>
+			</div>
+		</div>
+		
+		<!-- Thank You Section -->
+		<div class="thank-you-section" id="thank-you-section">
+			<h2>Cảm ơn bạn đã thanh toán!</h2>
+			<p style="font-size: 18px; margin-top: 20px;">Đơn hàng của bạn đã được xác nhận thành công.</p>
+			<p style="margin-top: 15px;" id="download-status">Các file tải xuống sẽ được tự động tải về trong giây lát...</p>
+			<div class="download-files-list" id="download-files-list" style="display: none;">
+				<h3 style="margin-bottom: 20px; color: #155724;">Tải xuống file:</h3>
+				<div id="download-files-content"></div>
+			</div>
 		</div>
 	</div>
 </div>
@@ -249,8 +157,9 @@ jQuery(document).ready(function($) {
 				submitBtn.prop('disabled', false).html(btnHtml);
 				
 				if (response.success && response.data) {
-					// Show modal with QR code
-					showQRModal(response.data);
+					// Hide form and show payment info
+					$('.checkout-form-wrapper').hide();
+					showPaymentInfo(response.data);
 					// Reset form
 					form[0].reset();
 				} else {
@@ -272,23 +181,44 @@ jQuery(document).ready(function($) {
 		return re.test(email);
 	}
 	
-	function showQRModal(data) {
-		var modal = $('#qr-modal');
-		var content = $('#qr-modal-content');
+	var currentOrderId = null;
+	var currentDownloads = [];
+	
+	function updateStep(stepNumber) {
+		// Remove active from all steps
+		$('.checkout-step').removeClass('active completed');
+		
+		// Mark previous steps as completed
+		for (var i = 1; i < stepNumber; i++) {
+			$('#step-' + i).addClass('completed');
+		}
+		
+		// Mark current step as active
+		$('#step-' + stepNumber).addClass('active');
+	}
+	
+	function showPaymentInfo(data) {
+		var section = $('#payment-info-section');
+		var content = $('#payment-info-content');
+		
+		currentOrderId = data.order_id;
+		
+		// Update step to 2
+		updateStep(2);
 		
 		var bankLogoHtml = '';
 		if (data.bank_logo_url) {
 			bankLogoHtml = '<img src="' + escapeHtml(data.bank_logo_url) + '" alt="Bank Logo" style="max-width: 150px; margin-bottom: 20px;">';
 		}
 		
-		var html = '<div class="qr-box" style="text-align: center; margin-bottom: 30px;">' +
+		var html = '<div class="qr-box">' +
 			'<p style="margin-bottom: 15px; font-weight: 600;">Cách 1: Mở app ngân hàng/ Ví và <b>quét mã QR</b></p>' +
 			'<img src="' + escapeHtml(data.qr_code_url) + '" alt="QR Code" class="qr-image">' +
 			'<div style="margin-top: 15px;">' +
 			'<a href="' + escapeHtml(data.qr_code_url) + '&download=yes" download="" style="display: inline-block; padding: 10px 20px; background: #007bff; color: #fff; text-decoration: none; border-radius: 4px;">Tải ảnh QR</a>' +
 			'</div>' +
 			'</div>' +
-			'<div class="manual-box" style="border-top: 1px solid #ddd; padding-top: 20px;">' +
+			'<div class="manual-box">' +
 			'<p style="margin-bottom: 15px; font-weight: 600;">Cách 2: Chuyển khoản <b>thủ công</b> theo thông tin</p>' +
 			bankLogoHtml +
 			'<table style="width: 100%; border-collapse: collapse;">' +
@@ -319,11 +249,114 @@ jQuery(document).ready(function($) {
 			'</div>';
 		
 		content.html(html);
-		modal.addClass('active');
+		section.addClass('active');
+		
+		// Scroll to payment info
+		$('html, body').animate({
+			scrollTop: section.offset().top - 100
+		}, 500);
 	}
 	
-	function closeQRModal() {
-		$('#qr-modal').removeClass('active');
+	// Handle confirm payment button
+	$('#confirm-payment-btn').on('click', function() {
+		if (!currentOrderId) return;
+		
+		var btn = $(this);
+		var btnHtml = btn.html();
+		
+		btn.prop('disabled', true).html('<i class="fas fa-spinner fa-pulse"></i> Đang kiểm tra...');
+		
+		$.ajax({
+			url: adminAjaxUrl,
+			type: 'POST',
+			data: {
+				action: 'check_order_status',
+				nonce: $('#checkout_nonce').val(),
+				order_id: currentOrderId
+			},
+			success: function(response) {
+				if (response.success && response.data) {
+					if (response.data.status === 'completed') {
+						// Order is completed, show thank you and download files
+						$('#payment-info-section').removeClass('active');
+						$('#thank-you-section').addClass('active');
+						
+						// Update step to 3
+						updateStep(3);
+						
+						// Store downloads
+						currentDownloads = response.data.downloads || [];
+						
+						// Download files automatically
+						if (currentDownloads.length > 0) {
+							var downloadAttempted = false;
+							setTimeout(function() {
+								currentDownloads.forEach(function(download, index) {
+									setTimeout(function() {
+										try {
+											var link = document.createElement('a');
+											link.href = download.url;
+											link.download = download.name || 'download';
+											link.target = '_blank';
+											document.body.appendChild(link);
+											link.click();
+											document.body.removeChild(link);
+											downloadAttempted = true;
+										} catch (e) {
+											console.error('Auto download failed:', e);
+										}
+									}, index * 500); // Delay each download by 500ms
+								});
+								
+								// Show download buttons after auto download attempt
+								setTimeout(function() {
+									showDownloadButtons();
+								}, (currentDownloads.length * 500) + 2000);
+							}, 1000);
+						} else {
+							$('#download-status').html('Không có file tải xuống.');
+						}
+						
+						// Scroll to thank you section
+						$('html, body').animate({
+							scrollTop: $('#thank-you-section').offset().top - 100
+						}, 500);
+					} else {
+						// Order not completed yet
+						btn.prop('disabled', false).html(btnHtml);
+						alert('Đơn hàng chưa được xác nhận thanh toán. Vui lòng đợi thêm một chút và thử lại.');
+					}
+				} else {
+					btn.prop('disabled', false).html(btnHtml);
+					var errorMsg = response.data && response.data.message ? response.data.message : 'Có lỗi xảy ra. Vui lòng thử lại.';
+					alert(errorMsg);
+				}
+			},
+			error: function() {
+				btn.prop('disabled', false).html(btnHtml);
+				alert('Có lỗi xảy ra khi kết nối server. Vui lòng thử lại.');
+			}
+		});
+	});
+	
+	function showDownloadButtons() {
+		if (currentDownloads.length > 0) {
+			var filesContent = $('#download-files-content');
+			var html = '';
+			
+			currentDownloads.forEach(function(download) {
+				html += '<div class="download-file-item">' +
+					'<span class="file-name">' + escapeHtml(download.name || 'File tải xuống') + '</span>' +
+					'<a href="' + escapeHtml(download.url) + '" class="download-btn" target="_blank" download>' +
+					'<i class="fas fa-download"></i> Tải xuống' +
+					'</a>' +
+					'</div>';
+			});
+			
+			filesContent.html(html);
+			$('#download-files-list').show();
+			$('#download-status').html('Nếu file không tự động tải xuống, vui lòng sử dụng các nút bên dưới:');
+		}
 	}
 	
 	function escapeHtml(text) {
@@ -337,19 +370,6 @@ jQuery(document).ready(function($) {
 		return text ? text.replace(/[&<>"']/g, function(m) { return map[m]; }) : '';
 	}
 	
-	// Close modal when clicking outside
-	$('#qr-modal').on('click', function(e) {
-		if (e.target === this) {
-			closeQRModal();
-		}
-	});
-	
-	// Close modal with Escape key
-	$(document).on('keydown', function(e) {
-		if (e.key === 'Escape') {
-			closeQRModal();
-		}
-	});
 });
 </script>
 

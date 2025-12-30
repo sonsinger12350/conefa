@@ -117,7 +117,7 @@
 	<!-- elevatezoom -->
 	<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/elevatezoom/2.2.3/jquery.elevatezoom.min.js"></script> -->
 	
-	<link rel="stylesheet" href="<?= get_template_directory_uri(); ?>/style.css?v=<?=time()?>">
+	<link rel="stylesheet" href="<?= get_template_directory_uri(); ?>/style.css">
 
 	<?php if (!empty($cssFiles[$post_name])): ?>
 		<link rel="stylesheet" href="<?= $cssFiles[$post_name] ?>">
@@ -127,7 +127,7 @@
 		<?php endif ?>
 	<?php endif ?>
 
-	<link rel="stylesheet" href="<?= get_template_directory_uri(); ?>/assets/css/responsive.css?v=<?=time()?>">
+	<link rel="stylesheet" href="<?= get_template_directory_uri(); ?>/assets/css/responsive.css">
 </head>
 
 <body <?= body_class($body_class); ?>>

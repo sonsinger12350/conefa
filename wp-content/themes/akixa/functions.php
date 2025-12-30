@@ -84,16 +84,12 @@
 		}
 		
 		$product = wc_get_product($product_id);
-		if (!$product || !$product->is_purchasable()) {
-			wp_send_json_error(['message' => 'Sản phẩm không hợp lệ hoặc không thể mua.']);
-		}
+		if (!$product || !$product->is_purchasable()) wp_send_json_error(['message' => 'Sản phẩm không hợp lệ hoặc không thể mua.']);
 		
 		// Create WooCommerce order
 		$order = wc_create_order();
 		
-		if (is_wp_error($order)) {
-			wp_send_json_error(['message' => 'Không thể tạo đơn hàng. Vui lòng thử lại.']);
-		}
+		if (is_wp_error($order)) wp_send_json_error(['message' => 'Không thể tạo đơn hàng. Vui lòng thử lại.']);
 		
 		// Add product to order
 		$order->add_product($product, 1);
@@ -140,9 +136,7 @@
 				// Try to get bank account via API
 				$api = new WC_SePay_API();
 				$bank_account = null;
-				if ($api->is_connected() && $bank_account_id) {
-					$bank_account = $api->get_bank_account($bank_account_id);
-				}
+				if ($api->is_connected() && $bank_account_id) $bank_account = $api->get_bank_account($bank_account_id);
 				
 				if ($bank_account) {
 					$required_sub_account_banks = ['BIDV', 'OCB', 'MSB', 'KienLongBank'];
@@ -150,10 +144,9 @@
 					
 					if (in_array($bank_short_name, $required_sub_account_banks)) {
 						$account_number = $sepay_gateway->get_option('sub_account');
-						if (empty($account_number)) {
-							$account_number = $bank_account['account_number'];
-						}
-					} else {
+						if (empty($account_number)) $account_number = $bank_account['account_number'];
+					}
+					else {
 						$account_number = $sepay_gateway->get_option('sub_account') ? $sepay_gateway->get_option('sub_account') : $bank_account['account_number'];
 					}
 					
@@ -161,7 +154,8 @@
 					$bank_bin = $bank_account_data['bank']['bin'];
 					$bank_logo_url = $bank_account_data['bank']['logo_url'];
 					$displayed_bank_name = $sepay_gateway->displayed_bank_name;
-				} else {
+				}
+				else {
 					// Use data from bank_account_data directly
 					$account_number = $bank_account_data['account_number'] ?? $sepay_gateway->get_option('bank_account_number');
 					$account_holder_name = $bank_account_data['account_holder_name'] ?? $sepay_gateway->get_option('bank_account_holder');
@@ -201,7 +195,8 @@
 				
 				if (isset($bank_data[$bank_select])) {
 					$bank_info = $bank_data[$bank_select];
-				} else {
+				}
+				else {
 					foreach ($bank_data as $key => $bank) {
 						if (
 							strtolower($bank['code']) === strtolower($bank_select) ||
@@ -223,15 +218,11 @@
 					$bank_logo_url = sprintf('https://my.sepay.vn/assets/images/banklogo/%s.png', strtolower($bank_info['short_name']));
 					
 					$bank_name_display_type = $sepay_gateway->get_option('show_bank_name');
-					if ($bank_name_display_type == "brand_name") {
-						$displayed_bank_name = $bank_info['short_name'];
-					} else if ($bank_name_display_type == "full_name") {
-						$displayed_bank_name = $bank_info['full_name'];
-					} else if ($bank_name_display_type == "full_include_brand") {
-						$displayed_bank_name = $bank_info['full_name'] . " (" . $bank_info['short_name'] . ")";
-					} else {
-						$displayed_bank_name = $bank_info['short_name'];
-					}
+
+					if ($bank_name_display_type == "brand_name") $displayed_bank_name = $bank_info['short_name'];
+					else if ($bank_name_display_type == "full_name") $displayed_bank_name = $bank_info['full_name'];
+					else if ($bank_name_display_type == "full_include_brand") $displayed_bank_name = $bank_info['full_name'] . " (" . $bank_info['short_name'] . ")";
+					else $displayed_bank_name = $bank_info['short_name'];
 				}
 			}
 			
@@ -260,15 +251,64 @@
 			}
 		}
 		
-		if (empty($sepay_data)) {
-			wp_send_json_error(['message' => 'Không thể lấy thông tin thanh toán. Vui lòng kiểm tra cấu hình Sepay.']);
-		}
+		if (empty($sepay_data)) wp_send_json_error(['message' => 'Không thể lấy thông tin thanh toán. Vui lòng kiểm tra cấu hình Sepay.']);
 		
 		wp_send_json_success($sepay_data);
 	}
 	
 	add_action('wp_ajax_create_checkout_order', 'ajax_create_checkout_order');
 	add_action('wp_ajax_nopriv_create_checkout_order', 'ajax_create_checkout_order');
+
+	// AJAX handler to check order status
+	function ajax_check_order_status() {
+		check_ajax_referer('checkout_nonce', 'nonce');
+		
+		$order_id = isset($_POST['order_id']) ? intval($_POST['order_id']) : 0;
+		if (empty($order_id)) wp_send_json_error(['message' => 'Thiếu thông tin đơn hàng.']);
+		
+		$order = wc_get_order($order_id);
+		if (!$order) wp_send_json_error(['message' => 'Đơn hàng không tồn tại.']);
+		
+		$order_status = $order->get_status();
+		$response_data = [
+			'status' => $order_status,
+			'downloads' => []
+		];
+		
+		// If order is completed, get downloadable files
+		if ($order_status === 'completed') {
+			// Check if order allows downloads
+			if ($order->is_download_permitted()) {
+				$items = $order->get_items();
+				
+				foreach ($items as $item) {
+					// Check if item is a product item
+					if (!is_a($item, 'WC_Order_Item_Product')) continue;
+					
+					$product = $item->get_product();
+					
+					if ($product && $product->is_downloadable()) {
+						$downloads = $item->get_item_downloads();
+						
+						if (!empty($downloads)) {
+							foreach ($downloads as $download_id => $download) {
+								$response_data['downloads'][] = [
+									'id' => $download_id,
+									'name' => isset($download['name']) ? $download['name'] : 'Download',
+									'url' => isset($download['download_url']) ? $download['download_url'] : ''
+								];
+							}
+						}
+					}
+				}
+			}
+		}
+		
+		wp_send_json_success($response_data);
+	}
+	
+	add_action('wp_ajax_check_order_status', 'ajax_check_order_status');
+	add_action('wp_ajax_nopriv_check_order_status', 'ajax_check_order_status');
 
 	add_filter( 'manage_edit-product_columns', 'add_custom_product_column', 10 );
 	function add_custom_product_column( $columns ) {
