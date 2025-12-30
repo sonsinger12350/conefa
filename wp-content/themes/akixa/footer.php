@@ -104,25 +104,26 @@
 	if (is_product()) $post_name = 'single-product';
 
 	$jsFiles = [
-		'trang-chu' => get_template_directory_uri().'/assets/js/index.js?v='.time(),
-		'trang-chu-moi' => get_template_directory_uri().'/assets/js/index.js?v='.time(),
-		'du-an' => get_template_directory_uri().'/assets/js/projects.js?v='.time(),
-		'single-project' => get_template_directory_uri().'/assets/js/single-project.js?v='.time(),
-		'blog' => get_template_directory_uri().'/assets/js/blog.js?v='.time(),
-		'post' => get_template_directory_uri().'/assets/js/blog.js?v='.time(),
-		'category' => get_template_directory_uri().'/assets/js/blog.js?v='.time(),
-		'dich-vu' => get_template_directory_uri().'/assets/js/services.js?v='.time(),
-		'tuyen-dung' => get_template_directory_uri().'/assets/js/career.js?v='.time(),
-		'lien-he' => get_template_directory_uri().'/assets/js/contact.js?v='.time(),
-		'product' => get_template_directory_uri().'/assets/js/archive-product.js?v='.time(),
-		'product_cat' => get_template_directory_uri().'/assets/js/archive-product.js?v='.time(),
-		'single-product' => get_template_directory_uri().'/assets/js/single-product.js?v='.time(),
+		'trang-chu' => get_template_directory_uri().'/assets/js/index.js',
+		'trang-chu-moi' => get_template_directory_uri().'/assets/js/index.js',
+		'du-an' => get_template_directory_uri().'/assets/js/projects.js',
+		'single-project' => get_template_directory_uri().'/assets/js/single-project.js',
+		'blog' => get_template_directory_uri().'/assets/js/blog.js',
+		'post' => get_template_directory_uri().'/assets/js/blog.js',
+		'category' => get_template_directory_uri().'/assets/js/blog.js',
+		'dich-vu' => get_template_directory_uri().'/assets/js/services.js',
+		'tuyen-dung' => get_template_directory_uri().'/assets/js/career.js',
+		'lien-he' => get_template_directory_uri().'/assets/js/contact.js',
+		'product' => get_template_directory_uri().'/assets/js/archive-product.js',
+		'product_cat' => get_template_directory_uri().'/assets/js/archive-product.js',
+		'single-product' => get_template_directory_uri().'/assets/js/single-product.js',
+		'checkout' => get_template_directory_uri().'/assets/js/checkout.js',
 	];
 ?>
 <script>
 	var adminAjaxUrl = '<?=admin_url('admin-ajax.php')?>';
 </script>
-<script src="<?= get_template_directory_uri().'/assets/js/main.js?v='.time() ?>"></script>
+<script src="<?= get_template_directory_uri().'/assets/js/main.js' ?>"></script>
 <?php if (!empty($jsFiles[$post_name])): ?>
 	<script src="<?= $jsFiles[$post_name] ?>"></script>
 <?php else:?>

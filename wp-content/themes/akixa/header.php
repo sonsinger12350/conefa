@@ -36,21 +36,22 @@
 	$menu_locations = get_nav_menu_locations();
 	$primary_menu_items = wp_get_nav_menu_items($menu_locations['primary']);
 	$cssFiles = [
-		'trang-chu' => get_template_directory_uri().'/assets/css/index.css?v='.time(),
-		'trang-chu-moi' => get_template_directory_uri().'/assets/css/index.css?v='.time(),
-		'dich-vu' => get_template_directory_uri().'/assets/css/services.css?v='.time(),
-		'dich-vu-moi' => get_template_directory_uri().'/assets/css/services.css?v='.time(),
-		'du-an' => get_template_directory_uri().'/assets/css/projects.css?v='.time(),
-		'single-project' => get_template_directory_uri().'/assets/css/single-project.css?v='.time(),
-		'blog' => get_template_directory_uri().'/assets/css/blog.css?v='.time(),
-		've-'.strtolower($websiteName) => get_template_directory_uri().'/assets/css/about.css?v='.time(),
-		'post' => get_template_directory_uri().'/assets/css/single-post.css?v='.time(),
-		'tuyen-dung' => get_template_directory_uri().'/assets/css/career.css?v='.time(),
-		'category' => get_template_directory_uri().'/assets/css/blog.css?v='.time(),
-		'lien-he' => get_template_directory_uri().'/assets/css/contact.css?v='.time(),
-		'product' => get_template_directory_uri().'/assets/css/archive-product.css?v='.time(),
-		'product_cat' => get_template_directory_uri().'/assets/css/archive-product.css?v='.time(),
-		'single-product' => get_template_directory_uri().'/assets/css/single-product.css?v='.time(),
+		'trang-chu' => get_template_directory_uri().'/assets/css/index.css',
+		'trang-chu-moi' => get_template_directory_uri().'/assets/css/index.css',
+		'dich-vu' => get_template_directory_uri().'/assets/css/services.css',
+		'dich-vu-moi' => get_template_directory_uri().'/assets/css/services.css',
+		'du-an' => get_template_directory_uri().'/assets/css/projects.css',
+		'single-project' => get_template_directory_uri().'/assets/css/single-project.css',
+		'blog' => get_template_directory_uri().'/assets/css/blog.css',
+		've-'.strtolower($websiteName) => get_template_directory_uri().'/assets/css/about.css',
+		'post' => get_template_directory_uri().'/assets/css/single-post.css',
+		'tuyen-dung' => get_template_directory_uri().'/assets/css/career.css',
+		'category' => get_template_directory_uri().'/assets/css/blog.css',
+		'lien-he' => get_template_directory_uri().'/assets/css/contact.css',
+		'product' => get_template_directory_uri().'/assets/css/archive-product.css',
+		'product_cat' => get_template_directory_uri().'/assets/css/archive-product.css',
+		'single-product' => get_template_directory_uri().'/assets/css/single-product.css',
+		'checkout' => get_template_directory_uri().'/assets/css/checkout.css',
 	];
 
 	$pageHeader2 = [
