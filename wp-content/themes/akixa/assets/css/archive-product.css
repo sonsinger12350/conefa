@@ -275,7 +275,6 @@ header .logo img {
 }
 
 .product .content .btn-buy {
-	min-height: 82px;
 	display: flex;
 	flex-direction: column;
 	justify-content: center;
@@ -313,6 +312,12 @@ header .logo img {
     display: flex;
     justify-content: center;
     align-items: center;
+}
+
+.woocommerce-Price-amount {
+	color: var(--main-green);
+	font-weight: 600;
+	font-size: 18px;
 }
 
 @media (max-width: 1399px) {
@@ -377,6 +382,11 @@ header .logo img {
 	.list-product .list .item .image img {
 		height: 280px;
 	}
+
+	.product .content .name {
+		min-height: 58px;
+    	line-height: 1.2;
+	}
 }
 
 @media (max-width: 600px) {
@@ -403,6 +413,19 @@ header .logo img {
 	}
 }
 
+@media (max-width: 575px) {
+	.product .content .name {
+		display: block;
+		min-height: unset;
+    	line-height: 1.2;
+	}
+
+	.product .category-list {
+		min-height: unset;
+		margin-bottom: 8px;
+	}
+}
+
 @media (max-width: 450px) {
 	.block-title {
 		font-size: 32px;
@@ -415,6 +438,19 @@ header .logo img {
 
 	.list-product .btn-load-more {
 		width: 100%;
+	}
+
+	.filter .btn {
+		font-size: 14px;
+		padding: 6px 12px;
+	}
+
+	.product .content .name {
+		font-size: 20px;
+	}
+
+	.woocommerce-Price-amount {
+		font-size: 18px;
 	}
 }
 

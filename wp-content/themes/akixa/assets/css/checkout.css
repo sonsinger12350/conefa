@@ -377,3 +377,18 @@ header .logo img {
 		max-width: 200px;
 	}
 }
+
+@media (max-width: 380px) {
+	.thank-you-section {
+		margin-top: 16px;
+		padding: 24px;
+	}
+
+	.download-file-item {
+		padding: 8px 16px;
+	}
+
+	.download-btn {
+		padding: 6px 12px;
+	}
+}

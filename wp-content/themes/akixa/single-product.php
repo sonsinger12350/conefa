@@ -57,16 +57,7 @@
 	$product_next = get_product_near($product_id, 'next');
 ?>
 <div class="page">
-	<div class="breadcrumb">
-		<?php
-			if ( function_exists('rank_math_the_breadcrumbs') ) {
-				rank_math_the_breadcrumbs();
-			} 
-			elseif ( function_exists('yoast_breadcrumb') ) {
-				yoast_breadcrumb();
-			}
-		?>
-	</div>
+	<div class="breadcrumb"><?php get_breadcrumb(); ?></div>
 	<hr>
 	<div class="row">
 		<div class="col-lg-9">
@@ -142,16 +133,10 @@
 							</div>
 						</div>
 					<?php endif ?>
-					<!-- <hr> -->
-					<!-- <div class="product-cart">
-						<div class="quantity input-group">
-							<span class="minus"><i class="fa-solid fa-minus"></i></span>
-							<input type="number" class="form-control" min="1" max="100" step="1" value="1">
-							<span class="plus"><i class="fa-solid fa-plus"></i></span>
-						</div>
-						<button class="btn btn-dark" type="button"><i class="fa-solid fa-cart-shopping"></i> Thêm vào giỏ hàng</button>
-						<button class="btn btn-dark" type="button">Mua ngay</button>
-					</div> -->
+					<hr>
+					<div class="product-cart">
+						<a class="btn btn-dark" href="<?= home_url('thanh-toan?id='.$product_id) ?>">Mua ngay</a>
+					</div>
 					<hr>
 					<div class="social-share d-flex">
 						<p class="mb-0">Chia sẻ</p>

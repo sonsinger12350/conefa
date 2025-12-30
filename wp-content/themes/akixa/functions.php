@@ -380,19 +380,13 @@
 		$widgets_manager->register(new \Custom_Elementor_Widget_Testimonials());
 	}
 	add_action('elementor/widgets/register', 'register_elementor_widgets');
-	
-	// Force Elementor Kit CSS to load before post CSS
-	add_action('wp_enqueue_scripts', function() {
-		if (class_exists('\Elementor\Plugin')) {
-			$kit = \Elementor\Plugin::$instance->kits_manager->get_kit_for_frontend();
-			if ($kit) {
-				if ($kit->is_autosave()) {
-					$css_file = \Elementor\Core\Files\CSS\Post_Preview::create($kit->get_id());
-				} else {
-					$css_file = \Elementor\Core\Files\CSS\Post::create($kit->get_id());
-				}
-				$css_file->enqueue();
-			}
+
+	function get_breadcrumb() {
+		if (function_exists('rank_math_the_breadcrumbs')) {
+			rank_math_the_breadcrumbs();
 		}
-	}, 5); // Priority 5 để tải trước Elementor's default priority (20)
+		elseif (function_exists('yoast_breadcrumb')) {
+			yoast_breadcrumb();
+		}
+	}
 ?>

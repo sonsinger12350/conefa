@@ -5,6 +5,17 @@ $(document).ready(function () {
 		$('.menu-mobile-overlay').toggleClass('active');
 	});
 
+	$('.open-category-mobile').on('click', function() {
+		$('.category-tree-mobile').toggleClass('active');
+		$('.menu-mobile-overlay').toggleClass('active');
+	});
+
+	$('body').on('click', '.category-tree-mobile .open-children-categories', function() {
+		let e = $(this).parent().find('.children-categories');
+
+		e.toggleClass('active');
+	});
+
 	$('.menu-mobile-overlay').on('click', function() {
 		$('.open-menu-mobile').removeClass('active');
 		$('.menu-collapse-mobile').removeClass('active');

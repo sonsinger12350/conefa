@@ -126,13 +126,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.14.1/jquery-ui.min.js"></script>
 <div class="page">
 	<div class="container">
-		<div class="breadcrumb">
-			<?php
-				if ( function_exists('yoast_breadcrumb') ) {
-					yoast_breadcrumb();
-				}
-			?>
-		</div>
+		<div class="breadcrumb"><?php get_breadcrumb(); ?></div>
 		<div class="body">
 			<?php include('wp-content/themes/akixa/template-parts/list-product-content.php') ?>
 		</div>
