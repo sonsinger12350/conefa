@@ -907,6 +907,11 @@
 	color: #fff;
 }
 
+.services-slide .main-carousel .slide-item .item-description .item-text {
+	height: 85%;
+    overflow: hidden;
+}
+
 .projects-slide .main-carousel .slide-item img {
 	width: 100%;
 	height: 500px;
