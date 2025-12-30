@@ -7,7 +7,7 @@ header .logo img {
 	scale: 1.4;
 }
 
-.page {
+body .page {
 	margin-top: 10px;
 	width: 90%;
 	margin-left: auto;
@@ -337,19 +337,19 @@ header .logo img {
 }
 
 @media (max-width: 1500px) {
-	.page {
+	body .page  {
 		width: 95%;
 	}
 }
 
 @media (max-width: 1400px) {
-	.page {
+	body .page  {
 		width: 100%;
 	}
 }
 
 @media (max-width: 1300px) {
-	.page {
+	body .page  {
 		width: 100%;
 	}
 
