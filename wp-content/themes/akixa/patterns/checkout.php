@@ -34,7 +34,7 @@
 <link rel="stylesheet" href="<?= get_template_directory_uri(); ?>/assets/css/checkout.css">
 <div class="checkout-page margin-section">
 	<div class="container">
-		<h1 class="title text-center mb-4">Thanh toán</h1>
+		<h1 class="title text-center mb-0">Thanh toán</h1>
 		
 		<!-- Checkout Steps -->
 		<div class="checkout-steps">
@@ -208,7 +208,7 @@ jQuery(document).ready(function($) {
 		
 		var bankLogoHtml = '';
 		if (data.bank_logo_url) {
-			bankLogoHtml = '<img src="' + escapeHtml(data.bank_logo_url) + '" alt="Bank Logo" style="max-width: 150px; margin-bottom: 20px;">';
+			bankLogoHtml = '<div class="bank-logo-box"><img src="' + escapeHtml(data.bank_logo_url) + '" alt="Bank Logo"></div>';
 		}
 		
 		var html = '<div class="qr-box">' +

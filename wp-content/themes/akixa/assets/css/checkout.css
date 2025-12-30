@@ -85,7 +85,6 @@
 
 .payment-info-section {
 	display: none;
-	margin-top: 40px;
 }
 
 .payment-info-section.active {
@@ -106,7 +105,9 @@
 
 .qr-box {
 	text-align: center;
-	margin-bottom: 30px;
+	padding: 16px;
+	border-radius: 16px;
+    box-shadow: 0 2px 10px rgb(0 0 0 / 33%);
 }
 
 .qr-image {
@@ -117,9 +118,18 @@
 }
 
 .manual-box {
-	border-top: 1px solid #ddd;
-	padding-top: 20px;
-	margin-top: 20px;
+	padding: 16px;
+	border-radius: 16px;
+    box-shadow: 0 2px 10px rgb(0 0 0 / 33%);
+}
+
+.manual-box .bank-logo-box {
+	text-align: center;
+}
+
+.manual-box .bank-logo-box img {
+	max-width: 100px;
+    margin-bottom: 8px;
 }
 
 .confirm-payment-btn {
@@ -170,7 +180,6 @@
 	display: flex;
 	justify-content: center;
 	align-items: center;
-	margin-bottom: 40px;
 	padding: 20px 0;
 }
 
@@ -291,6 +300,12 @@
 .download-btn:hover {
 	background: #218838;
 	color: #fff;
+}
+
+#payment-info-content {
+	display: flex;
+    justify-content: center;
+    gap: 40px;
 }
 
 @media (max-width: 768px) {
