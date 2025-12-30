@@ -314,12 +314,6 @@ header .logo img {
     align-items: center;
 }
 
-.woocommerce-Price-amount {
-	color: var(--main-green);
-	font-weight: 600;
-	font-size: 18px;
-}
-
 @media (max-width: 1399px) {
 	.list-product .first-product .image img {
 		height: 435px;

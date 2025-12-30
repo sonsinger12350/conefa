@@ -643,3 +643,9 @@ footer .copy-right p {
 	line-height: 20px;
 	letter-spacing: 0.12px;
 }
+
+.woocommerce-Price-amount {
+	color: var(--main-green);
+	font-weight: 600;
+	font-size: 18px;
+}
