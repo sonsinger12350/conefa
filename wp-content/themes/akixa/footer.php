@@ -117,7 +117,7 @@
 		'product' => get_template_directory_uri().'/assets/js/archive-product.js',
 		'product_cat' => get_template_directory_uri().'/assets/js/archive-product.js',
 		'single-product' => get_template_directory_uri().'/assets/js/single-product.js',
-		'checkout' => get_template_directory_uri().'/assets/js/checkout.js',
+		'thanh-toan' => get_template_directory_uri().'/assets/js/checkout.js',
 	];
 ?>
 <script>

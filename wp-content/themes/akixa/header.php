@@ -51,7 +51,7 @@
 		'product' => get_template_directory_uri().'/assets/css/archive-product.css',
 		'product_cat' => get_template_directory_uri().'/assets/css/archive-product.css',
 		'single-product' => get_template_directory_uri().'/assets/css/single-product.css',
-		'checkout' => get_template_directory_uri().'/assets/css/checkout.css',
+		'thanh-toan' => get_template_directory_uri().'/assets/css/checkout.css',
 	];
 
 	$pageHeader2 = [
