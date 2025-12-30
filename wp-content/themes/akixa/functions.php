@@ -78,6 +78,9 @@
 		$product_id = isset($_POST['product_id']) ? intval($_POST['product_id']) : 0;
 		$customer_name = isset($_POST['customer_name']) ? sanitize_text_field($_POST['customer_name']) : '';
 		$customer_email = isset($_POST['customer_email']) ? sanitize_email($_POST['customer_email']) : '';
+
+		if (strlen($customer_name) > 255) wp_send_json_error(['message' => 'Tên quá dài.']);
+		if (strlen($customer_email) > 255) wp_send_json_error(['message' => 'Email quá dài.']);
 		
 		if (empty($product_id) || empty($customer_name) || empty($customer_email) || !is_email($customer_email)) {
 			wp_send_json_error(['message' => 'Vui lòng điền đầy đủ thông tin hợp lệ.']);
@@ -268,6 +271,13 @@
 		
 		$order = wc_get_order($order_id);
 		if (!$order) wp_send_json_error(['message' => 'Đơn hàng không tồn tại.']);
+		
+		// Kiểm tra email trùng khớp với đơn hàng
+		$customer_email = isset($_POST['customer_email']) ? sanitize_email($_POST['customer_email']) : '';
+		if (empty($customer_email)) wp_send_json_error(['message' => 'Thiếu thông tin.']);
+		
+		$order_email = $order->get_billing_email();
+		if (empty($order_email) || !hash_equals(strtolower(trim($order_email)), strtolower(trim($customer_email)))) wp_send_json_error(['message' => 'Không có quyền thao tác.']);
 		
 		$order_status = $order->get_status();
 		$response_data = [

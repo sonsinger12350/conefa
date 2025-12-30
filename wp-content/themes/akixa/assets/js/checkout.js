@@ -50,6 +50,9 @@ jQuery(document).ready(function ($) {
 						saveOrderIdToCookie(response.data.order_id);
 					}
 					
+					// Lưu email để sử dụng cho các request sau
+					currentCustomerEmail = customerEmail;
+					
 					// Hide form and show payment info
 					$('.checkout-form-wrapper').hide();
 					showPaymentInfo(response.data);
@@ -111,6 +114,7 @@ jQuery(document).ready(function ($) {
 	}
 
 	var currentOrderId = null;
+	var currentCustomerEmail = null;
 	var currentDownloads = [];
 	var orderStatusInterval = null;
 	var isCheckingStatus = false;
@@ -217,7 +221,8 @@ jQuery(document).ready(function ($) {
 			data: {
 				action: 'check_order_status',
 				nonce: $('#checkout_nonce').val(),
-				order_id: currentOrderId
+				order_id: currentOrderId,
+				customer_email: currentCustomerEmail
 			},
 			success: function (response) {
 				isCheckingStatus = false;
