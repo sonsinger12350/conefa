@@ -68,6 +68,7 @@
 		'product',
 		'product_cat',
 		'single-product',
+		'thanh-toan',
 	];
 
 	$isHeader2 = (in_array($post_name, $pageHeader2) || in_array($post_type, $pageHeader2)) ? true : false;

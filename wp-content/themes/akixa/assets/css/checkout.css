@@ -1,5 +1,10 @@
+header .logo img {
+	width: 63px;
+	scale: 1.4;
+}
+
 .checkout-page {
-	padding: 40px 0;
+	margin-bottom: 40px;
 }
 
 .checkout-form-wrapper {
@@ -71,7 +76,7 @@
 	margin-bottom: 20px;
 }
 
-.checkout-product-info h3 {
+.checkout-product-info .title {
 	margin-bottom: 15px;
 	font-size: 24px;
 }
@@ -331,5 +336,30 @@
 
 	.step-label {
 		font-size: 14px;
+	}
+}
+
+@media (max-width: 450px) {
+	.checkout-page.margin-section {
+		margin-top: 80px !important;
+	}
+
+	.checkout-form,
+	.checkout-product-info {
+		padding: 16px;
+	}
+
+	.checkout-form input[type="text"],
+	.checkout-form input[type="email"] {
+		padding: 8px 12px;
+	}
+
+	.checkout-product-info .title {
+		margin-bottom: 8px;
+	}
+
+	.checkout-product-info .price {
+		font-size: 24px;
+		margin-bottom: 8px;
 	}
 }

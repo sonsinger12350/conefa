@@ -72,7 +72,7 @@
 			
 			<div class="checkout-product-info">
 				<?= $product_image ?>
-				<h3><?= esc_html($product_name) ?></h3>
+				<h3 class="title"><?= esc_html($product_name) ?></h3>
 				<div class="price"><?= $product_price ?></div>
 				<?php if ($cf_product['include']): ?>
 					<h4>Bạn nhận được gì?</h4>
