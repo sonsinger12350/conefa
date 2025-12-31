@@ -1,0 +1,442 @@
+jQuery(document).ready(function($) {
+	var progressInterval = null;
+	var isPolling = false;
+	var lastProgressUpdate = null;
+	var triggerInterval = null;
+	
+	// Get batch stats
+	function getBatchStats() {
+		$.ajax({
+			url: swcAdmin.ajaxUrl,
+			type: 'POST',
+			data: {
+				action: 'swc_get_batch_stats',
+				nonce: swcAdmin.nonce
+			},
+			success: function(response) {
+				if (response.success) {
+					var total = response.data.total;
+					$('#swc-total-images').text(total);
+				}
+			}
+		});
+	}
+	
+	// Get batch progress
+	function getBatchProgress() {
+		if (!isPolling) {
+			return;
+		}
+		
+		$.ajax({
+			url: swcAdmin.ajaxUrl,
+			type: 'POST',
+			data: {
+				action: 'swc_get_batch_progress',
+				nonce: swcAdmin.nonce
+			},
+			success: function(response) {
+				if (response.success) {
+					var data = response.data;
+					
+					if (data.status === 'idle' || !data.status) {
+						// No batch running
+						stopPolling();
+						stopTriggerInterval();
+						$('#swc-batch-progress').hide();
+						$('#swc-start-batch').prop('disabled', false).text('Start Batch Conversion');
+						return;
+					}
+					
+					if (data.status === 'running') {
+						// Check if progress has updated
+						var currentOffset = data.offset || 0;
+						var lastOffset = lastProgressUpdate ? lastProgressUpdate.offset : currentOffset;
+						
+						// Update last progress
+						lastProgressUpdate = {
+							offset: currentOffset,
+							timestamp: Date.now()
+						};
+						
+						// Update progress bar
+						var progress = data.progress || 0;
+						$('#swc-progress-bar').css('width', progress + '%').text(progress.toFixed(1) + '%');
+						
+						// Update progress text
+						var offset = data.offset || 0;
+						var total = data.total || 0;
+						var processed = data.processed || 0;
+						var skipped = data.skipped || 0;
+						var errors = data.errors || 0;
+						var averageTime = data.average_time_per_image || 0;
+						var totalTime = data.total_processing_time || 0;
+						
+						var message = 'Processing: ' + offset + ' / ' + total + ' (' + progress.toFixed(1) + '%)';
+						message += '<br>Processed: ' + processed + ' | Skipped: ' + skipped + ' | Errors: ' + errors;
+						if ((data.deleted_attachments || 0) > 0) {
+							message += ' | Deleted: ' + data.deleted_attachments;
+						}
+						
+						if (data.started_at) {
+							var startedTime = new Date(data.started_at);
+							var now = new Date();
+							var elapsed = Math.floor((now - startedTime) / 1000); // seconds
+							var minutes = Math.floor(elapsed / 60);
+							var seconds = elapsed % 60;
+							message += '<br>Elapsed time: ' + minutes + 'm ' + seconds + 's';
+						}
+						
+						// Display timing statistics
+						if (averageTime > 0) {
+							message += '<br><strong>Performance:</strong> Avg ' + averageTime.toFixed(2) + 's/image';
+							if (totalTime > 0) {
+								var totalMinutes = Math.floor(totalTime / 60);
+								var totalSeconds = Math.floor(totalTime % 60);
+								message += ' | Total processing: ' + totalMinutes + 'm ' + totalSeconds + 's';
+							}
+						}
+						
+						$('#swc-progress-text').html(message);
+						
+						// Show stop button and disable start button
+						$('#swc-stop-batch').show();
+						$('#swc-start-batch').prop('disabled', true);
+						
+						// Start trigger interval if not already started
+						if (!triggerInterval) {
+							startTriggerInterval();
+						}
+						
+						// Also trigger immediately if progress hasn't updated recently
+						// (WordPress cron only runs when there's traffic, so we need to trigger via AJAX)
+						if (lastProgressUpdate) {
+							var timeSinceUpdate = (Date.now() - lastProgressUpdate.timestamp) / 1000;
+							if (timeSinceUpdate > 40) {
+								// Progress hasn't updated in 40+ seconds, trigger now
+								triggerBatch();
+							}
+						} else {
+							// No progress update yet, trigger now
+							triggerBatch();
+						}
+					} else if (data.status === 'completed') {
+						// Finished
+						stopPolling();
+						stopTriggerInterval();
+						$('#swc-progress-bar').css('width', '100%').text('100%');
+						
+						var completedMessage = '<strong style="color: green;">✓ All images processed successfully!</strong><br>' +
+							'Total: ' + data.total + ' images | Processed: ' + data.processed + ' | Skipped: ' + data.skipped + ' | Errors: ' + data.errors;
+						if (data.deleted_attachments && data.deleted_attachments > 0) {
+							completedMessage += ' | Deleted: ' + data.deleted_attachments;
+						}
+						
+						// Add timing statistics if available
+						if (data.average_time_per_image && data.average_time_per_image > 0) {
+							completedMessage += '<br><strong>Performance:</strong> Avg ' + parseFloat(data.average_time_per_image).toFixed(2) + 's/image';
+							if (data.total_processing_time && data.total_processing_time > 0) {
+								var totalTime = parseFloat(data.total_processing_time);
+								var totalMinutes = Math.floor(totalTime / 60);
+								var totalSeconds = Math.floor(totalTime % 60);
+								completedMessage += ' | Total processing: ' + totalMinutes + 'm ' + totalSeconds + 's';
+							}
+						}
+						
+						$('#swc-progress-text').html(completedMessage);
+						$('#swc-start-batch').prop('disabled', false).text('Start Batch Conversion');
+						$('#swc-stop-batch').hide();
+					} else if (data.status === 'stopped') {
+						// Stopped
+						stopPolling();
+						stopTriggerInterval();
+						$('#swc-progress-text').html(
+							'<strong style="color: orange;">Batch processing stopped</strong><br>' +
+							'Processed: ' + (data.processed || 0) + ' / ' + (data.total || 0) + ' images'
+						);
+						$('#swc-start-batch').prop('disabled', false).text('Start Batch Conversion');
+						$('#swc-stop-batch').hide();
+					} else {
+						// Idle or unknown status
+						stopPolling();
+						stopTriggerInterval();
+						$('#swc-start-batch').prop('disabled', false);
+						$('#swc-stop-batch').hide();
+					}
+				}
+			},
+			error: function() {
+				console.error('Error getting batch progress');
+			}
+		});
+	}
+	
+	// Start polling progress
+	function startPolling() {
+		if (isPolling) {
+			return;
+		}
+		isPolling = true;
+		// Poll every 30 seconds (same as cron interval)
+		progressInterval = setInterval(getBatchProgress, 30000);
+		// Get progress immediately
+		getBatchProgress();
+		// Also trigger batch immediately to ensure it starts (WordPress cron needs traffic)
+		setTimeout(function() {
+			triggerBatch();
+		}, 2000); // Wait 2 seconds after starting to trigger
+	}
+	
+	// Stop polling progress
+	function stopPolling() {
+		isPolling = false;
+		if (progressInterval) {
+			clearInterval(progressInterval);
+			progressInterval = null;
+		}
+		stopTriggerInterval();
+	}
+	
+	// Trigger batch processing (fallback when cron doesn't run)
+	function triggerBatch() {
+		$.ajax({
+			url: swcAdmin.ajaxUrl,
+			type: 'POST',
+			data: {
+				action: 'swc_trigger_batch',
+				nonce: swcAdmin.nonce
+			},
+			success: function(response) {
+				if (response.success) {
+					console.log('Batch triggered via AJAX');
+				}
+			},
+			error: function() {
+				console.error('Error triggering batch');
+			}
+		});
+	}
+	
+	// Start trigger interval (trigger batch every 35 seconds when running to ensure cron continues)
+	function startTriggerInterval() {
+		if (triggerInterval) {
+			return;
+		}
+		// Trigger batch every 35 seconds to ensure it continues running
+		// This is slightly longer than cron interval (30s) to avoid conflicts
+		triggerInterval = setInterval(function() {
+			// Always trigger if batch is running (WordPress cron needs traffic to run)
+			// Check if progress hasn't updated in last 45 seconds
+			if (lastProgressUpdate) {
+				var timeSinceUpdate = (Date.now() - lastProgressUpdate.timestamp) / 1000; // seconds
+				if (timeSinceUpdate > 45) {
+					// Progress hasn't updated recently, trigger batch
+					triggerBatch();
+				} else {
+					// Progress is updating, but still trigger to ensure cron continues
+					// (WordPress cron only runs when there's traffic)
+					triggerBatch();
+				}
+			} else {
+				// No progress update yet, trigger batch
+				triggerBatch();
+			}
+		}, 35000); // Check every 35 seconds
+	}
+	
+	// Stop trigger interval
+	function stopTriggerInterval() {
+		if (triggerInterval) {
+			clearInterval(triggerInterval);
+			triggerInterval = null;
+		}
+		lastProgressUpdate = null;
+	}
+	
+	// Start batch button click
+	$('#swc-start-batch').on('click', function() {
+		if (!confirm('This will convert all existing images to WebP format using WordPress Cron. This may take a while. Continue?')) {
+			return;
+		}
+		
+		$(this).prop('disabled', true).text('Starting...');
+		$('#swc-batch-progress').show();
+		$('#swc-progress-bar').css('width', '0%');
+		$('#swc-progress-text').text('Initializing...');
+		
+		$.ajax({
+			url: swcAdmin.ajaxUrl,
+			type: 'POST',
+			data: {
+				action: 'swc_start_batch',
+				nonce: swcAdmin.nonce
+			},
+			success: function(response) {
+				if (response.success) {
+					$('#swc-start-batch').text('Processing...');
+					$('#swc-stop-batch').show();
+					// Start polling
+					startPolling();
+				} else {
+					alert('Error: ' + (response.data.message || 'Unknown error'));
+					$('#swc-start-batch').prop('disabled', false).text('Start Batch Conversion');
+					$('#swc-batch-progress').hide();
+				}
+			},
+			error: function() {
+				alert('AJAX error occurred. Please try again.');
+				$('#swc-start-batch').prop('disabled', false).text('Start Batch Conversion');
+				$('#swc-batch-progress').hide();
+			}
+		});
+	});
+	
+	// Stop batch button click
+	$('#swc-stop-batch').on('click', function() {
+		if (!confirm('Are you sure you want to stop the batch processing?')) {
+			return;
+		}
+		
+		$(this).prop('disabled', true).text('Stopping...');
+		
+		$.ajax({
+			url: swcAdmin.ajaxUrl,
+			type: 'POST',
+			data: {
+				action: 'swc_stop_batch',
+				nonce: swcAdmin.nonce
+			},
+			success: function(response) {
+				if (response.success) {
+					stopPolling();
+					$('#swc-stop-batch').prop('disabled', false).hide();
+					$('#swc-start-batch').prop('disabled', false).text('Start Batch Conversion');
+					$('#swc-progress-text').html('<strong style="color: orange;">Batch processing stopped by user</strong>');
+				} else {
+					alert('Error: ' + (response.data.message || 'Unknown error'));
+					$('#swc-stop-batch').prop('disabled', false);
+				}
+			},
+			error: function() {
+				alert('AJAX error occurred. Please try again.');
+				$('#swc-stop-batch').prop('disabled', false);
+			}
+		});
+	});
+	
+	// Check for existing batch on page load
+	getBatchStats();
+	
+	// Check if batch is already running on page load
+	function checkInitialStatus() {
+		$.ajax({
+			url: swcAdmin.ajaxUrl,
+			type: 'POST',
+			data: {
+				action: 'swc_get_batch_progress',
+				nonce: swcAdmin.nonce
+			},
+			success: function(response) {
+				if (response.success) {
+					var data = response.data;
+					
+					if (data.status === 'running') {
+						// Batch is running, show progress and disable start button
+						$('#swc-start-batch').prop('disabled', true);
+						$('#swc-stop-batch').show();
+						$('#swc-batch-progress').show();
+						
+						// Update progress display
+						var progress = data.progress || 0;
+						$('#swc-progress-bar').css('width', progress + '%').text(progress.toFixed(1) + '%');
+						
+						var offset = data.offset || 0;
+						var total = data.total || 0;
+						var processed = data.processed || 0;
+						var skipped = data.skipped || 0;
+						var errors = data.errors || 0;
+						var averageTime = data.average_time_per_image || 0;
+						var totalTime = data.total_processing_time || 0;
+						
+						var message = 'Processing: ' + offset + ' / ' + total + ' (' + progress.toFixed(1) + '%)';
+						message += '<br>Processed: ' + processed + ' | Skipped: ' + skipped + ' | Errors: ' + errors;
+						if ((data.deleted_attachments || 0) > 0) {
+							message += ' | Deleted: ' + data.deleted_attachments;
+						}
+						
+						if (data.started_at) {
+							var startedTime = new Date(data.started_at);
+							var now = new Date();
+							var elapsed = Math.floor((now - startedTime) / 1000);
+							var minutes = Math.floor(elapsed / 60);
+							var seconds = elapsed % 60;
+							message += '<br>Elapsed time: ' + minutes + 'm ' + seconds + 's';
+						}
+						
+						// Display timing statistics
+						if (averageTime > 0) {
+							message += '<br><strong>Performance:</strong> Avg ' + averageTime.toFixed(2) + 's/image';
+							if (totalTime > 0) {
+								var totalMinutes = Math.floor(totalTime / 60);
+								var totalSeconds = Math.floor(totalTime % 60);
+								message += ' | Total processing: ' + totalMinutes + 'm ' + totalSeconds + 's';
+							}
+						}
+						
+						$('#swc-progress-text').html(message);
+						
+						// Start polling
+						startPolling();
+					} else if (data.status === 'completed') {
+						// Show completed status
+						$('#swc-batch-progress').show();
+						$('#swc-progress-bar').css('width', '100%').text('100%');
+						
+						var completedMessage = '<strong style="color: green;">✓ All images processed successfully!</strong><br>' +
+							'Total: ' + (data.total || 0) + ' images | Processed: ' + (data.processed || 0) + ' | Skipped: ' + (data.skipped || 0) + ' | Errors: ' + (data.errors || 0);
+						if (data.deleted_attachments && data.deleted_attachments > 0) {
+							completedMessage += ' | Deleted: ' + data.deleted_attachments;
+						}
+						
+						// Add timing statistics if available
+						if (data.average_time_per_image && data.average_time_per_image > 0) {
+							completedMessage += '<br><strong>Performance:</strong> Avg ' + parseFloat(data.average_time_per_image).toFixed(2) + 's/image';
+							if (data.total_processing_time && data.total_processing_time > 0) {
+								var totalTime = parseFloat(data.total_processing_time);
+								var totalMinutes = Math.floor(totalTime / 60);
+								var totalSeconds = Math.floor(totalTime % 60);
+								completedMessage += ' | Total processing: ' + totalMinutes + 'm ' + totalSeconds + 's';
+							}
+						}
+						
+						$('#swc-progress-text').html(completedMessage);
+						$('#swc-start-batch').prop('disabled', false);
+					} else if (data.status === 'stopped') {
+						// Show stopped status
+						$('#swc-batch-progress').show();
+						$('#swc-progress-text').html(
+							'<strong style="color: orange;">Batch processing stopped</strong><br>' +
+							'Processed: ' + (data.processed || 0) + ' / ' + (data.total || 0) + ' images'
+						);
+						$('#swc-start-batch').prop('disabled', false);
+					} else {
+						// No batch running, enable start button
+						$('#swc-start-batch').prop('disabled', false);
+						$('#swc-batch-progress').hide();
+					}
+				}
+			},
+			error: function() {
+				console.error('Error checking initial batch status');
+			}
+		});
+	}
+	
+	// Check initial status on page load
+	checkInitialStatus();
+	
+	// Clean up on page unload
+	$(window).on('beforeunload', function() {
+		stopPolling();
+	});
+});
