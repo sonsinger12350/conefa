@@ -147,9 +147,12 @@ jQuery(document).ready(function($) {
 						$('#swc-start-batch').prop('disabled', false).text('Start Batch Conversion');
 						$('#swc-stop-batch').hide();
 					} else if (data.status === 'stopped') {
-						// Stopped
+						// Stopped - ensure polling and triggers are stopped
 						stopPolling();
 						stopTriggerInterval();
+						$('#swc-batch-progress').show();
+						var progress = data.progress || 0;
+						$('#swc-progress-bar').css('width', progress + '%').text(progress.toFixed(1) + '%');
 						$('#swc-progress-text').html(
 							'<strong style="color: orange;">Batch processing stopped</strong><br>' +
 							'Processed: ' + (data.processed || 0) + ' / ' + (data.total || 0) + ' images'
@@ -324,6 +327,40 @@ jQuery(document).ready(function($) {
 		});
 	});
 	
+	// Clear cache button click
+	$('#swc-clear-cache').on('click', function() {
+		var $button = $(this);
+		var originalText = $button.text();
+		
+		$button.prop('disabled', true).text('Clearing...');
+		
+		$.ajax({
+			url: swcAdmin.ajaxUrl,
+			type: 'POST',
+			data: {
+				action: 'swc_clear_cache',
+				nonce: swcAdmin.nonce
+			},
+			success: function(response) {
+				if (response.success) {
+					// Refresh total images count
+					getBatchStats();
+					$button.text('Cache Cleared!').css('color', 'green');
+					setTimeout(function() {
+						$button.prop('disabled', false).text(originalText).css('color', '');
+					}, 2000);
+				} else {
+					alert('Error: ' + (response.data.message || 'Unknown error'));
+					$button.prop('disabled', false).text(originalText);
+				}
+			},
+			error: function() {
+				alert('AJAX error occurred. Please try again.');
+				$button.prop('disabled', false).text(originalText);
+			}
+		});
+	});
+	
 	// Check for existing batch on page load
 	getBatchStats();
 	
@@ -412,13 +449,18 @@ jQuery(document).ready(function($) {
 						$('#swc-progress-text').html(completedMessage);
 						$('#swc-start-batch').prop('disabled', false);
 					} else if (data.status === 'stopped') {
-						// Show stopped status
+						// Show stopped status - ensure polling and triggers are stopped
+						stopPolling();
+						stopTriggerInterval();
 						$('#swc-batch-progress').show();
+						var progress = data.progress || 0;
+						$('#swc-progress-bar').css('width', progress + '%').text(progress.toFixed(1) + '%');
 						$('#swc-progress-text').html(
 							'<strong style="color: orange;">Batch processing stopped</strong><br>' +
 							'Processed: ' + (data.processed || 0) + ' / ' + (data.total || 0) + ' images'
 						);
 						$('#swc-start-batch').prop('disabled', false);
+						$('#swc-stop-batch').hide();
 					} else {
 						// No batch running, enable start button
 						$('#swc-start-batch').prop('disabled', false);
