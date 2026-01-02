@@ -88,11 +88,12 @@ class SWC_Frontend_Delivery
 		$webp_url = $converter->get_attachment_webp_url($attachment_id);
 
 		if ($webp_url) {
-			// For specific sizes, check if WebP version exists
-			if (is_array($size) || (is_string($size) && $size !== 'full')) {
+			// For specific named sizes (string), check if WebP version exists
+			// Only process string sizes, not arrays (which represent custom dimensions)
+			if (is_string($size) && $size !== 'full') {
 				$metadata = wp_get_attachment_metadata($attachment_id);
 
-				if ($metadata && ! empty($metadata['sizes'][$size])) {
+				if ($metadata && isset($metadata['sizes'][$size]) && ! empty($metadata['sizes'][$size])) {
 					$file_path = get_attached_file($attachment_id);
 
 					if ($file_path) {
@@ -113,7 +114,7 @@ class SWC_Frontend_Delivery
 				}
 			}
 			else {
-				// For full size, check if WebP file exists
+				// For full size or array sizes (custom dimensions), check if WebP file exists
 				$file_path = get_attached_file($attachment_id);
 
 				if ($file_path) {
