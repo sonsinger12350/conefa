@@ -236,6 +236,8 @@
 		$table = "wp_connest_config";
 
 		if (!empty($_POST['submit-config-form'])) {
+			require_once(ABSPATH . 'wp-admin/includes/file.php');
+			
 			$department_1 = json_encode($_POST['department_1'], JSON_UNESCAPED_UNICODE);
 			$department_1 = str_replace('\r\n', "<br>", $department_1);
 			$department_2 = json_encode($_POST['department_2'], JSON_UNESCAPED_UNICODE);
@@ -249,6 +251,48 @@
 				'department_1'  =>  $department_1,
 				'department_2'  =>  $department_2,
 			];
+
+			// Handle logo_black upload
+			if (!empty($_FILES['logo_black_file']['name'])) {
+				$allowed_types = array('image/jpeg', 'image/png', 'image/gif', 'image/webp');
+				$file_type = wp_check_filetype($_FILES['logo_black_file']['name']);
+				
+				if (in_array($file_type['type'], $allowed_types)) {
+					$file = [
+						'name' => $_FILES['logo_black_file']['name'],
+						'type' => $_FILES['logo_black_file']['type'],
+						'tmp_name' => $_FILES['logo_black_file']['tmp_name'],
+						'error' => $_FILES['logo_black_file']['error'],
+						'size' => $_FILES['logo_black_file']['size'],
+					];
+					$movefile = wp_handle_upload($file, ['test_form' => false]);
+					
+					if ($movefile && empty($movefile['error'])) $inputs['logo_black'] = $movefile['url'];
+				}
+			}
+			else if (!empty($_POST['logo_black'])) {
+				$inputs['logo_black'] = sanitize_text_field($_POST['logo_black']);
+			}
+
+			// Handle logo_white upload
+			if (!empty($_FILES['logo_white_file']['name'])) {
+				$allowed_types = array('image/jpeg', 'image/png', 'image/gif', 'image/webp');
+				$file_type = wp_check_filetype($_FILES['logo_white_file']['name']);
+				
+				if (in_array($file_type['type'], $allowed_types)) {
+					$file = [
+						'name' => $_FILES['logo_white_file']['name'],
+						'type' => $_FILES['logo_white_file']['type'],
+						'tmp_name' => $_FILES['logo_white_file']['tmp_name'],
+						'error' => $_FILES['logo_white_file']['error'],
+						'size' => $_FILES['logo_white_file']['size'],
+					];
+					$movefile = wp_handle_upload($file, ['test_form' => false]);
+					
+					if ($movefile && empty($movefile['error'])) $inputs['logo_white'] = $movefile['url'];
+				}
+			}
+			else if (!empty($_POST['logo_white'])) $inputs['logo_white'] = sanitize_text_field($_POST['logo_white']);
 
 			foreach ($inputs as $k => $v) {
 				$sql = "SELECT `key` FROM `$table` WHERE `key` = '$k'";
@@ -400,8 +444,8 @@
 		$data['department_1'] = json_decode($data['department_1'], true);
 		$data['department_2'] = json_decode($data['department_2'], true);
 
-		$data['department_1']['address'] = str_replace('<br>', "\r\n", $data['department_1']['address']);
-		$data['department_2']['address'] = str_replace('<br>', "\r\n", $data['department_2']['address']);
+		if (!empty($data['department_1']['address'])) $data['department_1']['address'] = str_replace('<br>', "\r\n", $data['department_1']['address']);
+		if (!empty($data['department_2']['address'])) $data['department_2']['address'] = str_replace('<br>', "\r\n", $data['department_2']['address']);
 
 		return $data;
 	}

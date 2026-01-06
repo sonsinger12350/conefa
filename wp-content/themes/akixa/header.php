@@ -72,15 +72,17 @@
 	];
 
 	$isHeader2 = (in_array($post_name, $pageHeader2) || in_array($post_type, $pageHeader2)) ? true : false;
-	$logoBlack = get_template_directory_uri()."/assets/images/logo.png?v=1";
-	$logoWhite = get_template_directory_uri()."/assets/images/logo-white.png?v=1";
+	
+	$config = getConnestConfig();
+	
+	// Get logo from config or use default
+	$logoBlack = !empty($config['logo_black']) ? $config['logo_black'] : get_template_directory_uri()."/assets/images/logo.png?v=1";
+	$logoWhite = !empty($config['logo_white']) ? $config['logo_white'] : get_template_directory_uri()."/assets/images/logo-white.png?v=1";
 	$logo = $logoBlack;
 
 	$categories_tree = get_product_categories_tree();
 
 	if ($isHeader2) $logo = $logoWhite;
-
-	$config = getConnestConfig();
 
 	$body_class = '';
 	if (is_user_logged_in()) $body_class .= ' logged-in';

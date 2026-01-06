@@ -75,12 +75,37 @@
 		max-width: 100%;
 	}
 
+	.form .logo-upload {
+		display: flex;
+		align-items: center;
+		gap: 16px;
+	}
+
+	.form .logo-upload img {
+		max-width: 150px;
+		max-height: 80px;
+		object-fit: contain;
+		border: 1px solid #ddd;
+		padding: 8px;
+		border-radius: 4px;
+		background: #f9f9f9;
+	}
+
+	.form .logo-upload input[type="file"] {
+		flex: 1;
+	}
+
+	.form .logo-upload .logo-preview {
+		display: flex;
+		flex-direction: column;
+		gap: 8px;
+	}
 
 </style>
 <div class="wrap">
 	<h1 class="wp-heading-inline">Cấu hình Connest</h1>
 	<div class="form">
-		<form action="" method="POST">
+		<form action="" method="POST" enctype="multipart/form-data">
 			<input type="hidden" name="submit-config-form" value="1">
 			<h3>Mạng xã hội:</h3>
 			<div class="item">
@@ -108,6 +133,39 @@
 			<div class="item">
 				<label for="iframe_map">Nhúng bản đồ:</label>
 				<input name="iframe_map" id="iframe_map" value='<?= @$config['iframe_map'] ?>' type="text">
+			</div>
+			<h3>Logo:</h3>
+			<div class="item">
+				<label for="logo_black">Logo Black:</label>
+				<div class="logo-upload">
+					<div class="logo-preview">
+						<?php if (!empty($config['logo_black'])): ?>
+							<img src="<?= esc_url($config['logo_black']) ?>" alt="Logo Black" id="logo_black_preview">
+						<?php else: ?>
+							<img src="" alt="Logo Black" id="logo_black_preview" style="display: none;">
+						<?php endif; ?>
+						<?php if (!empty($config['logo_black'])): ?>
+							<input type="hidden" name="logo_black" value="<?= esc_attr($config['logo_black']) ?>">
+						<?php endif; ?>
+					</div>
+					<input type="file" name="logo_black_file" id="logo_black" accept="image/*" onchange="previewLogo(this, 'logo_black_preview')">
+				</div>
+			</div>
+			<div class="item">
+				<label for="logo_white">Logo White:</label>
+				<div class="logo-upload">
+					<div class="logo-preview">
+						<?php if (!empty($config['logo_white'])): ?>
+							<img src="<?= esc_url($config['logo_white']) ?>" alt="Logo White" id="logo_white_preview">
+						<?php else: ?>
+							<img src="" alt="Logo White" id="logo_white_preview" style="display: none;">
+						<?php endif; ?>
+						<?php if (!empty($config['logo_white'])): ?>
+							<input type="hidden" name="logo_white" value="<?= esc_attr($config['logo_white']) ?>">
+						<?php endif; ?>
+					</div>
+					<input type="file" name="logo_white_file" id="logo_white" accept="image/*" onchange="previewLogo(this, 'logo_white_preview')">
+				</div>
 			</div>
 			<h3>Chi nhánh 1:</h3>
 			<div class="group">
@@ -153,3 +211,16 @@
 		</form>
 	</div>
 </div>
+<script>
+	function previewLogo(input, previewId) {
+		if (input.files && input.files[0]) {
+			var reader = new FileReader();
+			reader.onload = function(e) {
+				var preview = document.getElementById(previewId);
+				preview.src = e.target.result;
+				preview.style.display = 'block';
+			}
+			reader.readAsDataURL(input.files[0]);
+		}
+	}
+</script>
