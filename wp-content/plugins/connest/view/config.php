@@ -91,6 +91,10 @@
 		background: #f9f9f9;
 	}
 
+	.form .logo-upload img#logo_white_preview {
+		background: #a2a2a2;
+	}
+
 	.form .logo-upload input[type="file"] {
 		flex: 1;
 	}
