@@ -1,4 +1,4 @@
-# Smart WebP Converter
+# Image to WebP Converter
 
 Plugin WordPress tự động chuyển đổi ảnh sang định dạng WebP và giảm dung lượng ảnh một cách hợp lý.
 
@@ -20,7 +20,7 @@ Plugin WordPress tự động chuyển đổi ảnh sang định dạng WebP và
 
 ## Cài đặt
 
-1. Copy thư mục `smart-webp-converter` vào `wp-content/plugins/`
+1. Copy thư mục `image-to-webp-converter` vào `wp-content/plugins/`
 2. Kích hoạt plugin trong WordPress Admin > Plugins
 3. Vào Settings > WebP Converter để cấu hình
 
@@ -67,8 +67,8 @@ Sử dụng công cụ Batch Processing để chuyển đổi tất cả ảnh �
 ### Cấu trúc thư mục
 
 ```
-smart-webp-converter/
-├── smart-webp-converter.php    # File chính
+image-to-webp-converter/
+├── image-to-webp-converter.php    # File chính
 ├── includes/
 │   ├── class-webp-converter.php      # Class xử lý chuyển đổi
 │   ├── class-admin-settings.php     # Admin settings page

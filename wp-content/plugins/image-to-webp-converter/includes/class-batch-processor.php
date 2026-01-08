@@ -5,7 +5,7 @@
  * 
  * Handles batch conversion of existing images using WordPress Cron
  *
- * @package Smart_WebP_Converter
+ * @package Image_To_WebP_Converter
  */
 
 // Exit if accessed directly
@@ -13,35 +13,35 @@ if (! defined('ABSPATH')) {
 	exit;
 }
 
-class SWC_Batch_Processor
+class ITWPC_Batch_Processor
 {
 
 	/**
 	 * Cron hook name
 	 */
-	const CRON_HOOK = 'swc_batch_process_cron';
+	const CRON_HOOK = 'itwpc_batch_process_cron';
 
 	/**
 	 * Progress transient name
 	 */
-	const PROGRESS_TRANSIENT = 'swc_batch_progress';
+	const PROGRESS_TRANSIENT = 'itwpc_batch_progress';
 
 	/**
 	 * Lock transient name (to prevent concurrent execution)
 	 */
-	const LOCK_TRANSIENT = 'swc_batch_lock';
+	const LOCK_TRANSIENT = 'itwpc_batch_lock';
 
 	/**
 	 * Instance of this class
 	 *
-	 * @var SWC_Batch_Processor
+	 * @var ITWPC_Batch_Processor
 	 */
 	private static $instance = null;
 
 	/**
 	 * Get instance of this class
 	 *
-	 * @return SWC_Batch_Processor
+	 * @return ITWPC_Batch_Processor
 	 */
 	public static function get_instance()
 	{
@@ -60,12 +60,12 @@ class SWC_Batch_Processor
 		add_action(self::CRON_HOOK, [$this, 'process_batch_cron']);
 
 		// AJAX handlers
-		add_action('wp_ajax_swc_start_batch', [$this, 'ajax_start_batch']);
-		add_action('wp_ajax_swc_stop_batch', [$this, 'ajax_stop_batch']);
-		add_action('wp_ajax_swc_get_batch_progress', [$this, 'ajax_get_batch_progress']);
-		add_action('wp_ajax_swc_get_batch_stats', [$this, 'ajax_get_batch_stats']);
-		add_action('wp_ajax_swc_trigger_batch', [$this, 'ajax_trigger_batch']);
-		add_action('wp_ajax_swc_clear_cache', [$this, 'ajax_clear_cache']);
+		add_action('wp_ajax_itwpc_start_batch', [$this, 'ajax_start_batch']);
+		add_action('wp_ajax_itwpc_stop_batch', [$this, 'ajax_stop_batch']);
+		add_action('wp_ajax_itwpc_get_batch_progress', [$this, 'ajax_get_batch_progress']);
+		add_action('wp_ajax_itwpc_get_batch_stats', [$this, 'ajax_get_batch_stats']);
+		add_action('wp_ajax_itwpc_trigger_batch', [$this, 'ajax_trigger_batch']);
+		add_action('wp_ajax_itwpc_clear_cache', [$this, 'ajax_clear_cache']);
 	}
 
 	/**
@@ -126,7 +126,7 @@ class SWC_Batch_Processor
 	private function ensure_log_directory()
 	{
 		$upload_dir = wp_upload_dir();
-		$log_dir = $upload_dir['basedir'] . '/swc-logs';
+		$log_dir = $upload_dir['basedir'] . '/itwpc-logs';
 
 		if (! file_exists($log_dir)) {
 			wp_mkdir_p($log_dir);
@@ -157,7 +157,7 @@ class SWC_Batch_Processor
 	 */
 	public function clear_cache()
 	{
-		return delete_transient('swc_total_files_count');
+		return delete_transient('itwpc_total_files_count');
 	}
 
 	/**
@@ -168,7 +168,7 @@ class SWC_Batch_Processor
 	public function get_total_images()
 	{
 		// Check cache first
-		$cache_key = 'swc_total_files_count';
+		$cache_key = 'itwpc_total_files_count';
 		$cached = get_transient($cache_key);
 		if ($cached !== false) return intval($cached);
 
@@ -198,7 +198,7 @@ class SWC_Batch_Processor
 	private function get_processed_ids()
 	{
 		$upload_dir = wp_upload_dir();
-		$json_file = $upload_dir['basedir'] . '/swc-logs/processed-ids.json';
+		$json_file = $upload_dir['basedir'] . '/itwpc-logs/processed-ids.json';
 
 		if (! file_exists($json_file)) {
 			return [];
@@ -325,7 +325,7 @@ class SWC_Batch_Processor
 		// Schedule cron event with recurring interval
 		// WordPress will automatically create subsequent cron events based on the interval
 		if (! wp_next_scheduled(self::CRON_HOOK)) {
-			wp_schedule_event(time(), 'swc_batch_interval', self::CRON_HOOK);
+			wp_schedule_event(time(), 'itwpc_batch_interval', self::CRON_HOOK);
 		}
 
 		// Process first batch immediately
@@ -413,8 +413,8 @@ class SWC_Batch_Processor
 			@ini_set('memory_limit', '512M'); // Increased for large files
 			@set_time_limit(600); // 10 minutes per batch for large files
 
-			$converter = SWC_WebP_Converter::get_instance();
-			$options = get_option('swc_options', array());
+			$converter = ITWPC_WebP_Converter::get_instance();
+			$options = get_option('itwpc_options', array());
 			$quality = isset($options['webp_quality']) ? intval($options['webp_quality']) : 82;
 			$max_width = isset($options['max_width']) ? intval($options['max_width']) : 2560;
 			$max_height = isset($options['max_height']) ? intval($options['max_height']) : 2560;
@@ -448,7 +448,7 @@ class SWC_Batch_Processor
 				if (in_array($attachment_id, $processed_ids, true)) {
 					$file_path_for_log = get_attached_file($attachment_id);
 					$relative_path = $this->get_relative_path($file_path_for_log);
-					$this->write_log('[SWC Batch] ID ' . $attachment_id . ': SKIPPED (already processed)' . $relative_path);
+					$this->write_log('[ITWPC Batch] ID ' . $attachment_id . ': SKIPPED (already processed)' . $relative_path);
 					
 					$this->save_processed_id($attachment_id);
 					$skipped++;
@@ -474,7 +474,7 @@ class SWC_Batch_Processor
 
 						if ($deleted) {
 							$relative_path = $file_path ? $this->get_relative_path($file_path) : '';
-							$this->write_log('[SWC Batch] ID ' . $attachment_id . ': DELETED (file missing)' . $relative_path);
+							$this->write_log('[ITWPC Batch] ID ' . $attachment_id . ': DELETED (file missing)' . $relative_path);
 							$deleted_attachments++;
 							$current_file_offset++;
 							$current_attachment_offset++;
@@ -531,7 +531,7 @@ class SWC_Batch_Processor
 					
 					$relative_path = ' | ' . $this->get_relative_path($file_path);
 					$processing_time_str = $this->format_processing_time($total_processing_time_for_image);
-					$this->write_log('[SWC Batch] ID ' . $attachment_id . ': SKIPPED (WebP still larger at min quality ' . $min_quality . ')' . $processing_time_str . $relative_path);
+					$this->write_log('[ITWPC Batch] ID ' . $attachment_id . ': SKIPPED (WebP still larger at min quality ' . $min_quality . ')' . $processing_time_str . $relative_path);
 					
 					$this->save_processed_id($attachment_id);
 					$skipped++;
@@ -552,7 +552,7 @@ class SWC_Batch_Processor
 
 					if ($metadata) {
 						if ($webp_path) {
-							$metadata['swc_webp'] = [
+							$metadata['itwpc_webp'] = [
 								'file' => basename($webp_path),
 								'path' => $webp_path,
 								'url'  => $converter->get_attachment_webp_url($attachment_id),
@@ -573,7 +573,7 @@ class SWC_Batch_Processor
 					$relative_path = ' | ' . $this->get_relative_path($file_path);
 					$processing_time_str = $this->format_processing_time($total_processing_time_for_image);
 					
-					$this->write_log('[SWC Batch] ID ' . $attachment_id . ': SUCCESS' . $processing_time_str . $size_info . $quality_info . $relative_path);
+					$this->write_log('[ITWPC Batch] ID ' . $attachment_id . ': SUCCESS' . $processing_time_str . $size_info . $quality_info . $relative_path);
 
 					// Processed count is now tracked in processed-ids.json, no need to increment
 					$current_file_offset++; // Count attachment (only count attachments, not thumbnails)
@@ -658,7 +658,7 @@ class SWC_Batch_Processor
 					
 					$relative_path = ' | ' . $this->get_relative_path($file_path);
 					$processing_time_str = $this->format_processing_time($total_processing_time_for_image);
-					$this->write_log('[SWC Batch] ID ' . $attachment_id . ': ERROR - ' . $error_msg . $processing_time_str . $relative_path);
+					$this->write_log('[ITWPC Batch] ID ' . $attachment_id . ': ERROR - ' . $error_msg . $processing_time_str . $relative_path);
 
 					$errors++;
 					$current_file_offset++;
@@ -714,7 +714,7 @@ class SWC_Batch_Processor
 	/**
 	 * Convert image with quality adjustment if WebP is larger than original
 	 *
-	 * @param SWC_WebP_Converter $converter Converter instance
+	 * @param ITWPC_WebP_Converter $converter Converter instance
 	 * @param string             $file_path Original file path
 	 * @param int                $attachment_id Attachment ID
 	 * @param int                $quality Initial quality
@@ -922,19 +922,19 @@ class SWC_Batch_Processor
 	 */
 	public function ajax_start_batch()
 	{
-		check_ajax_referer('swc_batch_process', 'nonce');
+		check_ajax_referer('itwpc_batch_process', 'nonce');
 
 		if (! current_user_can('manage_options')) {
-			wp_send_json_error(['message' => __('Permission denied', 'smart-webp-converter')]);
+			wp_send_json_error(['message' => __('Permission denied', 'image-to-webp-converter')]);
 		}
 
 		$result = $this->start_batch();
 
 		if ($result) {
-			wp_send_json_success(['message' => __('Batch processing started', 'smart-webp-converter')]);
+			wp_send_json_success(['message' => __('Batch processing started', 'image-to-webp-converter')]);
 		}
 		else {
-			wp_send_json_error(['message' => __('Batch processing is already running', 'smart-webp-converter')]);
+			wp_send_json_error(['message' => __('Batch processing is already running', 'image-to-webp-converter')]);
 		}
 	}
 
@@ -943,19 +943,19 @@ class SWC_Batch_Processor
 	 */
 	public function ajax_stop_batch()
 	{
-		check_ajax_referer('swc_batch_process', 'nonce');
+		check_ajax_referer('itwpc_batch_process', 'nonce');
 
 		if (! current_user_can('manage_options')) {
-			wp_send_json_error(['message' => __('Permission denied', 'smart-webp-converter')]);
+			wp_send_json_error(['message' => __('Permission denied', 'image-to-webp-converter')]);
 		}
 
 		$result = $this->stop_batch();
 
 		if ($result) {
-			wp_send_json_success(['message' => __('Batch processing stopped', 'smart-webp-converter')]);
+			wp_send_json_success(['message' => __('Batch processing stopped', 'image-to-webp-converter')]);
 		}
 		else {
-			wp_send_json_error(['message' => __('Failed to stop batch processing', 'smart-webp-converter')]);
+			wp_send_json_error(['message' => __('Failed to stop batch processing', 'image-to-webp-converter')]);
 		}
 	}
 
@@ -964,10 +964,10 @@ class SWC_Batch_Processor
 	 */
 	public function ajax_get_batch_progress()
 	{
-		check_ajax_referer('swc_batch_process', 'nonce');
+		check_ajax_referer('itwpc_batch_process', 'nonce');
 
 		if (! current_user_can('manage_options')) {
-			wp_send_json_error(['message' => __('Permission denied', 'smart-webp-converter')]);
+			wp_send_json_error(['message' => __('Permission denied', 'image-to-webp-converter')]);
 		}
 
 		$progress = $this->get_progress();
@@ -975,7 +975,7 @@ class SWC_Batch_Processor
 		if (! $progress) {
 			wp_send_json_success([
 				'status' => 'idle',
-				'message' => __('No batch processing in progress', 'smart-webp-converter'),
+				'message' => __('No batch processing in progress', 'image-to-webp-converter'),
 			]);
 		}
 
@@ -1002,10 +1002,10 @@ class SWC_Batch_Processor
 	 */
 	public function ajax_get_batch_stats()
 	{
-		check_ajax_referer('swc_batch_process', 'nonce');
+		check_ajax_referer('itwpc_batch_process', 'nonce');
 
 		if (! current_user_can('manage_options')) {
-			wp_send_json_error(['message' => __('Permission denied', 'smart-webp-converter')]);
+			wp_send_json_error(['message' => __('Permission denied', 'image-to-webp-converter')]);
 		}
 
 		$total = $this->get_total_images();
@@ -1020,41 +1020,41 @@ class SWC_Batch_Processor
 	 */
 	public function ajax_trigger_batch()
 	{
-		check_ajax_referer('swc_batch_process', 'nonce');
+		check_ajax_referer('itwpc_batch_process', 'nonce');
 
 		if (! current_user_can('manage_options')) {
-			wp_send_json_error(['message' => __('Permission denied', 'smart-webp-converter')]);
+			wp_send_json_error(['message' => __('Permission denied', 'image-to-webp-converter')]);
 		}
 
 		$progress = $this->get_progress();
 
 		// Only trigger if batch is running
 		if (! $progress || ! isset($progress['status']) || $progress['status'] !== 'running') {
-			wp_send_json_success(['message' => __('Batch is not running', 'smart-webp-converter')]);
+			wp_send_json_success(['message' => __('Batch is not running', 'image-to-webp-converter')]);
 		}
 
 		// Check lock to prevent concurrent execution
 		$lock = get_transient(self::LOCK_TRANSIENT);
 		if ($lock && (time() - $lock) < 300) {
 			// Another batch is running, skip
-			wp_send_json_success(['message' => __('Batch is already processing', 'smart-webp-converter')]);
+			wp_send_json_success(['message' => __('Batch is already processing', 'image-to-webp-converter')]);
 		}
 
 		if (! $this->should_continue_processing()) {
 			$this->clear_cron_and_lock();
-			wp_send_json_success(['message' => __('Batch is not running', 'smart-webp-converter')]);
+			wp_send_json_success(['message' => __('Batch is not running', 'image-to-webp-converter')]);
 		}
 
 		// Ensure cron is scheduled (WordPress will handle recurring events automatically)
 		// Only schedule if not already scheduled
 		if (! wp_next_scheduled(self::CRON_HOOK)) {
-			wp_schedule_event(time(), 'swc_batch_interval', self::CRON_HOOK);
+			wp_schedule_event(time(), 'itwpc_batch_interval', self::CRON_HOOK);
 		}
 
 		// Trigger batch processing
 		$this->process_batch_cron();
 
-		wp_send_json_success(['message' => __('Batch processing triggered', 'smart-webp-converter')]);
+			wp_send_json_success(['message' => __('Batch processing triggered', 'image-to-webp-converter')]);
 	}
 
 	/**
@@ -1062,19 +1062,19 @@ class SWC_Batch_Processor
 	 */
 	public function ajax_clear_cache()
 	{
-		check_ajax_referer('swc_batch_process', 'nonce');
+		check_ajax_referer('itwpc_batch_process', 'nonce');
 
 		if (! current_user_can('manage_options')) {
-			wp_send_json_error(['message' => __('Permission denied', 'smart-webp-converter')]);
+			wp_send_json_error(['message' => __('Permission denied', 'image-to-webp-converter')]);
 		}
 
 		$result = $this->clear_cache();
 
 		if ($result) {
-			wp_send_json_success(['message' => __('Cache cleared successfully', 'smart-webp-converter')]);
+			wp_send_json_success(['message' => __('Cache cleared successfully', 'image-to-webp-converter')]);
 		}
 		else {
-			wp_send_json_success(['message' => __('Cache was already empty or cleared', 'smart-webp-converter')]);
+			wp_send_json_success(['message' => __('Cache was already empty or cleared', 'image-to-webp-converter')]);
 		}
 	}
 }

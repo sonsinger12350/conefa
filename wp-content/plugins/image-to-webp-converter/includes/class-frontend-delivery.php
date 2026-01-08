@@ -5,7 +5,7 @@
  * 
  * Handles serving WebP images to browsers that support it
  *
- * @package Smart_WebP_Converter
+ * @package Image_To_WebP_Converter
  */
 
 // Exit if accessed directly
@@ -13,20 +13,20 @@ if (! defined('ABSPATH')) {
 	exit;
 }
 
-class SWC_Frontend_Delivery
+class ITWPC_Frontend_Delivery
 {
 
 	/**
 	 * Instance of this class
 	 *
-	 * @var SWC_Frontend_Delivery
+	 * @var ITWPC_Frontend_Delivery
 	 */
 	private static $instance = null;
 
 	/**
 	 * Get instance of this class
 	 *
-	 * @return SWC_Frontend_Delivery
+	 * @return ITWPC_Frontend_Delivery
 	 */
 	public static function get_instance()
 	{
@@ -39,7 +39,7 @@ class SWC_Frontend_Delivery
 	 */
 	private function __construct()
 	{
-		$options = get_option('swc_options', []);
+		$options = get_option('itwpc_options', []);
 
 		if (! empty($options['serve_webp'])) {
 			// Hook into image URL generation
@@ -84,7 +84,7 @@ class SWC_Frontend_Delivery
 		$file_path = get_attached_file($attachment_id);
 		if ($file_path && strtolower(pathinfo($file_path, PATHINFO_EXTENSION)) === 'webp') return $image;
 
-		$converter = SWC_WebP_Converter::get_instance();
+		$converter = ITWPC_WebP_Converter::get_instance();
 		$webp_url = $converter->get_attachment_webp_url($attachment_id);
 
 		if ($webp_url) {
@@ -160,7 +160,7 @@ class SWC_Frontend_Delivery
 			if ($file_path && strtolower(pathinfo($file_path, PATHINFO_EXTENSION)) === 'webp') continue;
 
 			// Get WebP URL and check if file exists
-			$converter = SWC_WebP_Converter::get_instance();
+			$converter = ITWPC_WebP_Converter::get_instance();
 			$webp_url = $converter->get_attachment_webp_url($attachment_id);
 
 			if ($webp_url) {
@@ -195,7 +195,7 @@ class SWC_Frontend_Delivery
 		$file_path = get_attached_file($post_thumbnail_id);
 		if ($file_path && strtolower(pathinfo($file_path, PATHINFO_EXTENSION)) === 'webp') return $html;
 
-		$converter = SWC_WebP_Converter::get_instance();
+		$converter = ITWPC_WebP_Converter::get_instance();
 		$webp_url = $converter->get_attachment_webp_url($post_thumbnail_id);
 
 		if ($webp_url) {
@@ -236,7 +236,7 @@ class SWC_Frontend_Delivery
 		$file_path = get_attached_file($attachment_id);
 		if ($file_path && strtolower(pathinfo($file_path, PATHINFO_EXTENSION)) === 'webp') return $url;
 
-		$converter = SWC_WebP_Converter::get_instance();
+		$converter = ITWPC_WebP_Converter::get_instance();
 		$webp_url = $converter->get_attachment_webp_url($attachment_id);
 
 		if ($webp_url) {
@@ -275,7 +275,7 @@ class SWC_Frontend_Delivery
 		$file_path = get_attached_file($attachment_id);
 		if ($file_path && strtolower(pathinfo($file_path, PATHINFO_EXTENSION)) === 'webp') return $url;
 
-		$converter = SWC_WebP_Converter::get_instance();
+		$converter = ITWPC_WebP_Converter::get_instance();
 		$webp_url = $converter->get_attachment_webp_url($attachment_id);
 
 		if ($webp_url) {
@@ -316,7 +316,7 @@ class SWC_Frontend_Delivery
 		$file_path = get_attached_file($attachment_id);
 		if ($file_path && strtolower(pathinfo($file_path, PATHINFO_EXTENSION)) === 'webp') return $thumbnail_url;
 
-		$converter = SWC_WebP_Converter::get_instance();
+		$converter = ITWPC_WebP_Converter::get_instance();
 		
 		// For specific sizes, check if WebP version exists
 		if (is_array($size) || (is_string($size) && $size !== 'full')) {
@@ -411,7 +411,7 @@ class SWC_Frontend_Delivery
 				if (strtolower(pathinfo($file_path, PATHINFO_EXTENSION)) === 'webp') return $matches[0];
 
 				// Get WebP path
-				$converter = SWC_WebP_Converter::get_instance();
+				$converter = ITWPC_WebP_Converter::get_instance();
 				$webp_path = $converter->get_webp_path($file_path);
 
 				if (file_exists($webp_path)) {
@@ -461,7 +461,7 @@ class SWC_Frontend_Delivery
 				if (strtolower(pathinfo($file_path, PATHINFO_EXTENSION)) === 'webp') return $matches[0];
 
 				// Get WebP path
-				$converter = SWC_WebP_Converter::get_instance();
+				$converter = ITWPC_WebP_Converter::get_instance();
 				$webp_path = $converter->get_webp_path($file_path);
 
 				if (file_exists($webp_path)) {
@@ -490,7 +490,7 @@ class SWC_Frontend_Delivery
 	 */
 	private function get_webp_path($file_path)
 	{
-		$converter = SWC_WebP_Converter::get_instance();
+		$converter = ITWPC_WebP_Converter::get_instance();
 		return $converter->get_webp_path($file_path);
 	}
 }

@@ -1,14 +1,13 @@
 <?php
 /**
- * Plugin Name: Smart WebP Converter
- * Plugin URI: https://github.com/your-repo/smart-webp-converter
+ * Plugin Name: Image to WebP Converter
  * Description: Tự động chuyển đổi ảnh sang định dạng WebP và giảm dung lượng ảnh một cách hợp lý. Hỗ trợ tự động chuyển đổi khi upload và batch processing cho ảnh cũ.
  * Version: 1.0.0
  * Author: Lucas
  * Author URI: https://yourwebsite.com
  * License: GPL v2 or later
  * License URI: https://www.gnu.org/licenses/gpl-2.0.html
- * Text Domain: smart-webp-converter
+ * Text Domain: image-to-webp-converter
  * Domain Path: /languages
  * Requires at least: 5.0
  * Requires PHP: 7.4
@@ -20,27 +19,27 @@ if (! defined('ABSPATH')) {
 }
 
 // Define plugin constants
-define('SWC_VERSION', '1.0.0');
-define('SWC_PLUGIN_DIR', plugin_dir_path(__FILE__));
-define('SWC_PLUGIN_URL', plugin_dir_url(__FILE__));
-define('SWC_PLUGIN_BASENAME', plugin_basename(__FILE__));
+define('ITWPC_VERSION', '1.0.0');
+define('ITWPC_PLUGIN_DIR', plugin_dir_path(__FILE__));
+define('ITWPC_PLUGIN_URL', plugin_dir_url(__FILE__));
+define('ITWPC_PLUGIN_BASENAME', plugin_basename(__FILE__));
 
 /**
  * Main plugin class
  */
-class Smart_WebP_Converter {
+class Image_To_WebP_Converter {
 	
 	/**
 	 * Instance of this class
 	 *
-	 * @var Smart_WebP_Converter
+	 * @var Image_To_WebP_Converter
 	 */
 	private static $instance = null;
 	
 	/**
 	 * Get instance of this class
 	 *
-	 * @return Smart_WebP_Converter
+	 * @return Image_To_WebP_Converter
 	 */
 	public static function get_instance()
 	{
@@ -83,10 +82,10 @@ class Smart_WebP_Converter {
 	 */
 	private function load_dependencies()
 	{
-		require_once SWC_PLUGIN_DIR . 'includes/class-webp-converter.php';
-		require_once SWC_PLUGIN_DIR . 'includes/class-admin-settings.php';
-		require_once SWC_PLUGIN_DIR . 'includes/class-batch-processor.php';
-		require_once SWC_PLUGIN_DIR . 'includes/class-frontend-delivery.php';
+		require_once ITWPC_PLUGIN_DIR . 'includes/class-webp-converter.php';
+		require_once ITWPC_PLUGIN_DIR . 'includes/class-admin-settings.php';
+		require_once ITWPC_PLUGIN_DIR . 'includes/class-batch-processor.php';
+		require_once ITWPC_PLUGIN_DIR . 'includes/class-frontend-delivery.php';
 	}
 
 	/**
@@ -98,16 +97,16 @@ class Smart_WebP_Converter {
 		add_filter('cron_schedules', [$this, 'add_cron_interval']);
 
 		// Initialize WebP converter
-		SWC_WebP_Converter::get_instance();
+		ITWPC_WebP_Converter::get_instance();
 
 		// Initialize admin settings
 		if (is_admin()) {
-			SWC_Admin_Settings::get_instance();
-			SWC_Batch_Processor::get_instance();
+			ITWPC_Admin_Settings::get_instance();
+			ITWPC_Batch_Processor::get_instance();
 		}
 
 		// Initialize frontend delivery
-		SWC_Frontend_Delivery::get_instance();
+		ITWPC_Frontend_Delivery::get_instance();
 	}
 
 	/**
@@ -118,9 +117,9 @@ class Smart_WebP_Converter {
 	 */
 	public function add_cron_interval($schedules)
 	{
-		$schedules['swc_batch_interval'] = [
+		$schedules['itwpc_batch_interval'] = [
 			'interval' => 60, // 1 minute
-			'display'  => __('Every 1 minute (WebP Batch)', 'smart-webp-converter'),
+			'display'  => __('Every 1 minute (WebP Batch)', 'image-to-webp-converter'),
 		];
 
 		return $schedules;
@@ -131,7 +130,7 @@ class Smart_WebP_Converter {
 	 */
 	public function load_textdomain()
 	{
-		load_plugin_textdomain('smart-webp-converter', false, dirname(SWC_PLUGIN_BASENAME) . '/languages');
+		load_plugin_textdomain('image-to-webp-converter', false, dirname(ITWPC_PLUGIN_BASENAME) . '/languages');
 	}
 
 	/**
@@ -150,7 +149,7 @@ class Smart_WebP_Converter {
 			'serve_webp'        => true,
 		];
 
-		add_option('swc_options', $default_options);
+		add_option('itwpc_options', $default_options);
 
 		// Flush rewrite rules if needed
 		flush_rewrite_rules();
@@ -162,10 +161,10 @@ class Smart_WebP_Converter {
 	public function deactivate()
 	{
 		// Clear scheduled cron events
-		$timestamp = wp_next_scheduled('swc_batch_process_cron');
+		$timestamp = wp_next_scheduled('itwpc_batch_process_cron');
 
 		if ($timestamp) {
-			wp_unschedule_event($timestamp, 'swc_batch_process_cron');
+			wp_unschedule_event($timestamp, 'itwpc_batch_process_cron');
 		}
 
 		// Clean up if needed
@@ -176,11 +175,11 @@ class Smart_WebP_Converter {
 /**
  * Initialize the plugin
  */
-function swc_init()
+function itwpc_init()
 {
-	return Smart_WebP_Converter::get_instance();
+	return Image_To_WebP_Converter::get_instance();
 }
 
 // Start the plugin
-swc_init();
+itwpc_init();
 
