@@ -43,7 +43,7 @@
 		'du-an' => get_template_directory_uri().'/assets/css/projects.css',
 		'single-project' => get_template_directory_uri().'/assets/css/single-project.css',
 		'blog' => get_template_directory_uri().'/assets/css/blog.css',
-		've-'.strtolower($websiteName) => get_template_directory_uri().'/assets/css/about.css',
+		've-chung-toi' => get_template_directory_uri().'/assets/css/about.css',
 		'post' => get_template_directory_uri().'/assets/css/single-post.css',
 		'tuyen-dung' => get_template_directory_uri().'/assets/css/career.css',
 		'category' => get_template_directory_uri().'/assets/css/blog.css',
