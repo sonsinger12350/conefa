@@ -60,7 +60,7 @@
 		'du-an',
 		'single-project',
 		'blog',
-		've-'.strtolower($websiteName),
+		've-chung-toi',
 		'post',
 		'tuyen-dung',
 		'category',
