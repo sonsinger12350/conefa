@@ -299,9 +299,8 @@
 	}
 
 	header .logo img {
-		width: 80px;
+		width: 150px;
 		height: 80px;
-		scale: 1.5;
 	}
 
 	footer .logo img {
@@ -402,7 +401,7 @@
 	}
 
 	header .logo img {
-		width: 50px;
+		width: 115px;
 		height: 50px;
 	}
 
@@ -915,6 +914,15 @@
 }
 
 @media (max-width: 380px) {
+	header .logo img {
+		width: 100px;
+	}
+
+	header .open-category-mobile,
+	header .open-menu-mobile {
+		font-size: 12px;
+	}
+
 	.body .about .block-title {
 		font-size: 42px;
 	}

@@ -105,6 +105,13 @@
 		gap: 8px;
 	}
 
+	.form input[type="color"] {
+		padding: 0 !important;
+		border: 1px solid #8c8f94;
+		border-radius: 4px;
+		cursor: pointer;
+	}
+
 </style>
 <div class="wrap">
 	<h1 class="wp-heading-inline">Cấu hình Connest</h1>
@@ -137,6 +144,50 @@
 			<div class="item">
 				<label for="iframe_map">Nhúng bản đồ:</label>
 				<input name="iframe_map" id="iframe_map" value='<?= @$config['iframe_map'] ?>' type="text">
+			</div>
+			<h3>Favicon:</h3>
+			<div class="item">
+				<label for="favicon">Favicon:</label>
+				<div class="logo-upload">
+					<div class="logo-preview">
+						<?php if (!empty($config['favicon'])): ?>
+							<img src="<?= esc_url($config['favicon']) ?>" alt="Favicon" id="favicon_preview" style="max-width: 32px; max-height: 32px;">
+						<?php else: ?>
+							<img src="" alt="Favicon" id="favicon_preview" style="display: none; max-width: 32px; max-height: 32px;">
+						<?php endif; ?>
+						<?php if (!empty($config['favicon'])): ?>
+							<input type="hidden" name="favicon" value="<?= esc_attr($config['favicon']) ?>">
+						<?php endif; ?>
+					</div>
+					<input type="file" name="favicon_file" id="favicon" accept="image/*" onchange="previewLogo(this, 'favicon_preview')">
+				</div>
+				<small style="color: #666; font-size: 12px;">Kích thước khuyến nghị: 32x32px hoặc 16x16px (ICO, PNG)</small>
+			</div>
+			<h3>Nội dung Header:</h3>
+			<div class="item">
+				<label for="hero_title">Tiêu đề Header:</label>
+				<input name="hero_title" id="hero_title" value="<?= @$config['hero_title'] ?>" type="text" placeholder="Thiết kế kiến trúc<br>vi khí hậu">
+				<small style="color: #666; font-size: 12px;">Sử dụng &lt;br&gt; để xuống dòng</small>
+			</div>
+			<div class="item">
+				<label for="hero_description">Mô tả Header:</label>
+				<textarea name="hero_description" id="hero_description" rows="3"><?= @$config['hero_description'] ?></textarea>
+				<small style="color: #666; font-size: 12px;">Sử dụng &lt;b&gt; để in đậm</small>
+			</div>
+			<h3>Màu sắc:</h3>
+			<div class="item">
+				<label for="main_green">Màu xanh chính (Main Green):</label>
+				<div style="display: flex; gap: 8px; align-items: center;">
+					<input name="main_green" id="main_green" value="<?= @$config['main_green'] ?: '#48684B' ?>" type="color" style="width: 80px; height: 40px; cursor: pointer;">
+					<input type="text" id="main_green_text" value="<?= @$config['main_green'] ?: '#48684B' ?>" placeholder="#48684B" style="flex: 1;">
+				</div>
+			</div>
+			<div class="item">
+				<label for="light_green">Màu xanh sáng (Light Green):</label>
+				<div style="display: flex; gap: 8px; align-items: center;">
+					<input name="light_green" id="light_green" value="<?= @$config['light_green'] ?: '#8EBC43' ?>" type="color" style="width: 80px; height: 40px; cursor: pointer;">
+					<input type="text" id="light_green_text" value="<?= @$config['light_green'] ?: '#8EBC43' ?>" placeholder="#8EBC43" style="flex: 1;">
+				</div>
 			</div>
 			<h3>Logo:</h3>
 			<div class="item">
@@ -227,4 +278,34 @@
 			reader.readAsDataURL(input.files[0]);
 		}
 	}
+
+	// Sync color picker and text input
+	document.addEventListener('DOMContentLoaded', function() {
+		var mainGreenColor = document.getElementById('main_green');
+		var mainGreenText = document.getElementById('main_green_text');
+		var lightGreenColor = document.getElementById('light_green');
+		var lightGreenText = document.getElementById('light_green_text');
+
+		if (mainGreenColor && mainGreenText) {
+			mainGreenColor.addEventListener('input', function() {
+				mainGreenText.value = this.value;
+			});
+			mainGreenText.addEventListener('input', function() {
+				if (/^#[0-9A-F]{6}$/i.test(this.value)) {
+					mainGreenColor.value = this.value;
+				}
+			});
+		}
+
+		if (lightGreenColor && lightGreenText) {
+			lightGreenColor.addEventListener('input', function() {
+				lightGreenText.value = this.value;
+			});
+			lightGreenText.addEventListener('input', function() {
+				if (/^#[0-9A-F]{6}$/i.test(this.value)) {
+					lightGreenColor.value = this.value;
+				}
+			});
+		}
+	});
 </script>

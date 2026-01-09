@@ -247,7 +247,11 @@
 				'social'  =>  sanitize_text_field(json_encode($_POST['social'])),
 				'hotline'  =>  sanitize_text_field($_POST['hotline']),
 				'email'  =>  sanitize_text_field($_POST['email']),	
-				'iframe_map'  =>  $_POST['iframe_map'],	
+				'iframe_map'  =>  $_POST['iframe_map'],
+				'hero_title'  =>  wp_kses_post($_POST['hero_title']),
+				'hero_description'  =>  wp_kses_post($_POST['hero_description']),
+				'main_green'  =>  sanitize_hex_color($_POST['main_green']),
+				'light_green'  =>  sanitize_hex_color($_POST['light_green']),
 				'department_1'  =>  $department_1,
 				'department_2'  =>  $department_2,
 			];
@@ -293,6 +297,28 @@
 				}
 			}
 			else if (!empty($_POST['logo_white'])) $inputs['logo_white'] = sanitize_text_field($_POST['logo_white']);
+
+			// Handle favicon upload
+			if (!empty($_FILES['favicon_file']['name'])) {
+				$allowed_types = array('image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/x-icon', 'image/vnd.microsoft.icon');
+				$file_type = wp_check_filetype($_FILES['favicon_file']['name']);
+				
+				if (in_array($file_type['type'], $allowed_types)) {
+					$file = [
+						'name' => $_FILES['favicon_file']['name'],
+						'type' => $_FILES['favicon_file']['type'],
+						'tmp_name' => $_FILES['favicon_file']['tmp_name'],
+						'error' => $_FILES['favicon_file']['error'],
+						'size' => $_FILES['favicon_file']['size'],
+					];
+					$movefile = wp_handle_upload($file, ['test_form' => false]);
+					
+					if ($movefile && empty($movefile['error'])) $inputs['favicon'] = $movefile['url'];
+				}
+			}
+			else if (!empty($_POST['favicon'])) {
+				$inputs['favicon'] = sanitize_text_field($_POST['favicon']);
+			}
 
 			foreach ($inputs as $k => $v) {
 				$sql = "SELECT `key` FROM `$table` WHERE `key` = '$k'";

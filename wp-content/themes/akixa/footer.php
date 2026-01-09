@@ -1,11 +1,12 @@
 <?php
 	$websiteName = get_bloginfo('name');
 	$config = getConnestConfig();
+	$logoWhite = !empty($config['logo_white']) ? $config['logo_white'] : get_template_directory_uri()."/assets/images/logo-white.png?v=1";
 ?>
 	<footer>
 		<div class="footer-content">
 			<div class="logo">
-				<img src="<?= get_template_directory_uri(); ?>/assets/images/logo-white.png?v=1" alt="">
+				<img src="<?= $logoWhite ?>" alt="">
 				<?= get_template_part('template-parts/btn-explore', null, ['type' => 'register']); ?>
 			</div>
 			<div class="content">

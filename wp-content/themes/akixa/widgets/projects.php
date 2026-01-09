@@ -31,18 +31,57 @@ class Custom_Elementor_Widget_Projects extends \Elementor\Widget_Base {
 			]
 		);
 
-		// Get categories for select
-		$categories = get_terms(array(
+		$this->add_control(
+			'data_source',
+			[
+				'label' => __('Nguồn dữ liệu', 'astra-child'),
+				'type' => Controls_Manager::SELECT,
+				'default' => 'product',
+				'options' => [
+					'product' => __('Sản phẩm', 'astra-child'),
+					'du-an' => __('Dự án', 'astra-child'),
+				],
+			]
+		);
+
+		// Get categories for products
+		$product_categories = get_terms(array(
+			'taxonomy' => 'product_cat',
+			'hide_empty' => false,
+		));
+		
+		$product_category_options = ['all' => __('Tất cả', 'astra-child')];
+		if (!empty($product_categories) && !is_wp_error($product_categories)) {
+			foreach ($product_categories as $cat) {
+				$product_category_options[$cat->slug] = $cat->name;
+			}
+		}
+
+		// Get categories for projects
+		$project_categories = get_terms(array(
 			'taxonomy' => 'danh-muc-du-an',
 			'hide_empty' => false,
 		));
 		
-		$category_options = ['all' => __('Tất cả', 'astra-child')];
-		if (!empty($categories) && !is_wp_error($categories)) {
-			foreach ($categories as $cat) {
-				$category_options[$cat->slug] = $cat->name;
+		$project_category_options = ['all' => __('Tất cả', 'astra-child')];
+		if (!empty($project_categories) && !is_wp_error($project_categories)) {
+			foreach ($project_categories as $cat) {
+				$project_category_options[$cat->slug] = $cat->name;
 			}
 		}
+
+		$this->add_control(
+			'product_category',
+			[
+				'label' => __('Danh mục sản phẩm', 'astra-child'),
+				'type' => Controls_Manager::SELECT,
+				'default' => 'all',
+				'options' => $product_category_options,
+				'condition' => [
+					'data_source' => 'product',
+				],
+			]
+		);
 
 		$this->add_control(
 			'project_category',
@@ -50,14 +89,17 @@ class Custom_Elementor_Widget_Projects extends \Elementor\Widget_Base {
 				'label' => __('Danh mục dự án', 'astra-child'),
 				'type' => Controls_Manager::SELECT,
 				'default' => 'all',
-				'options' => $category_options,
+				'options' => $project_category_options,
+				'condition' => [
+					'data_source' => 'du-an',
+				],
 			]
 		);
 
 		$this->add_control(
 			'posts_per_page',
 			[
-				'label' => __('Số lượng dự án', 'astra-child'),
+				'label' => __('Số lượng', 'astra-child'),
 				'type' => Controls_Manager::NUMBER,
 				'default' => 8,
 				'min' => 1,
@@ -100,7 +142,7 @@ class Custom_Elementor_Widget_Projects extends \Elementor\Widget_Base {
 		$this->start_controls_section(
 			'style_projects_section',
 			[
-				'label' => __('Dự án', 'astra-child'),
+				'label' => __('Nội dung', 'astra-child'),
 				'tab'   => Controls_Manager::TAB_STYLE,
 			]
 		);
@@ -130,7 +172,7 @@ class Custom_Elementor_Widget_Projects extends \Elementor\Widget_Base {
 			Group_Control_Typography::get_type(),
 			[
 				'name'     => 'name_typography',
-				'label'    => __('Kiểu chữ tên dự án', 'astra-child'),
+				'label'    => __('Kiểu chữ tên', 'astra-child'),
 				'selector' => '{{WRAPPER}} .projects-slide .slide-item .item-name',
 			]
 		);
@@ -138,7 +180,7 @@ class Custom_Elementor_Widget_Projects extends \Elementor\Widget_Base {
 		$this->add_control(
 			'name_color',
 			[
-				'label' => __('Màu tên dự án', 'astra-child'),
+				'label' => __('Màu tên', 'astra-child'),
 				'type' => Controls_Manager::COLOR,
 				'default' => '#ffffff',
 				'selectors' => [
@@ -165,9 +207,20 @@ class Custom_Elementor_Widget_Projects extends \Elementor\Widget_Base {
 	protected function render() {
 		$settings = $this->get_settings_for_display();
 
+		// Determine post type and taxonomy based on data source
+		$data_source = !empty($settings['data_source']) ? $settings['data_source'] : 'product';
+		
+		if ($data_source === 'du-an') {
+			$post_type = 'du-an';
+			$taxonomy = 'danh-muc-du-an';
+		} else {
+			$post_type = 'product';
+			$taxonomy = 'product_cat';
+		}
+
 		// Query arguments
 		$args = array(
-			'post_type' => 'du-an',
+			'post_type' => $post_type,
 			'posts_per_page' => !empty($settings['posts_per_page']) ? intval($settings['posts_per_page']) : 8,
 			'orderby' => !empty($settings['orderby']) ? $settings['orderby'] : 'date',
 			'order' => !empty($settings['order']) ? $settings['order'] : 'DESC',
@@ -175,12 +228,19 @@ class Custom_Elementor_Widget_Projects extends \Elementor\Widget_Base {
 		);
 
 		// Filter by category if selected
-		if (!empty($settings['project_category']) && $settings['project_category'] !== 'all') {
+		$category_slug = '';
+		if ($data_source === 'du-an') {
+			$category_slug = !empty($settings['project_category']) ? $settings['project_category'] : '';
+		} else {
+			$category_slug = !empty($settings['product_category']) ? $settings['product_category'] : '';
+		}
+
+		if (!empty($category_slug) && $category_slug !== 'all') {
 			$args['tax_query'] = array(
 				array(
-					'taxonomy' => 'danh-muc-du-an',
+					'taxonomy' => $taxonomy,
 					'field' => 'slug',
-					'terms' => $settings['project_category'],
+					'terms' => $category_slug,
 				),
 			);
 		}
@@ -207,7 +267,7 @@ class Custom_Elementor_Widget_Projects extends \Elementor\Widget_Base {
 			if ($image_id) $image_url = wp_get_attachment_image_url($image_id, 'full');
 			
 			// Get category (first term from taxonomy)
-			$categories = get_the_terms($post_id, 'danh-muc-du-an');
+			$categories = get_the_terms($post_id, $taxonomy);
 			$category = '';
 
 			if (!empty($categories) && !is_wp_error($categories)) {

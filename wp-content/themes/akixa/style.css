@@ -17,8 +17,6 @@ Text Domain: akixa
 	}
 
 	--main-black: #272727;
-	--main-green: #48684B;
-	--light-green: #8EBC43;
 	--gray: #E2E2E2;
 	--gray-text: #C8C8C8;
 	--body-color: #7F7F7F;
@@ -260,8 +258,9 @@ header .content .title {
 }
 
 header .logo img {
-	width: 135px;
+	width: 200px;
 	height: auto;
+	object-fit: contain;
 }
 
 header .main-menu {

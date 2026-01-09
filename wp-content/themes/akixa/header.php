@@ -79,6 +79,9 @@
 	$logoBlack = !empty($config['logo_black']) ? $config['logo_black'] : get_template_directory_uri()."/assets/images/logo.png?v=1";
 	$logoWhite = !empty($config['logo_white']) ? $config['logo_white'] : get_template_directory_uri()."/assets/images/logo-white.png?v=1";
 	$logo = $logoBlack;
+	
+	// Get favicon from config or use logo black as fallback
+	$favicon = !empty($config['favicon']) ? $config['favicon'] : $logoBlack;
 
 	$categories_tree = get_product_categories_tree();
 
@@ -95,11 +98,24 @@
 <head>
 	<title><?= $title ?></title>
 	<meta name="description" content="<?= $description ?>">
-	<link rel="shortcut icon" href="<?= $logoBlack ?>" sizes=32x32/>
+	<link rel="shortcut icon" href="<?= esc_url($favicon) ?>" sizes="32x32"/>
+	<link rel="icon" type="image/png" href="<?= esc_url($favicon) ?>" sizes="32x32"/>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 	<?php wp_head(); ?>
+	
+	<?php
+		// Override CSS variables with config values
+		$main_green = !empty($config['main_green']) ? esc_attr($config['main_green']) : '#48684B';
+		$light_green = !empty($config['light_green']) ? esc_attr($config['light_green']) : '#8EBC43';
+	?>
+	<style>
+		:root {
+			--main-green: <?= $main_green ?>;
+			--light-green: <?= $light_green ?>;
+		}
+	</style>
 	
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css"/>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/js/bootstrap.min.js"></script>
@@ -176,8 +192,12 @@
 			</div>
 			<?php if (!$isHeader2): ?>
 				<div class="content">
-					<h1 class="title">Thiết kế kiến trúc<br>vi khí hậu</h1>
-					<p class="text-grey block-desc">Nơi không chỉ thiết kế những công trình kiến trúc có <b>giá trị thẩm mỹ</b> tinh tế, mà còn tạo <b>môi trường sống lí tưởng</b> cho sức khỏe thể chất và tinh thần của bạn và gia đình.</p>
+					<?php 
+						$hero_title = !empty($config['hero_title']) ? wp_kses_post($config['hero_title']) : 'Thiết kế kiến trúc<br>vi khí hậu';
+						$hero_description = !empty($config['hero_description']) ? wp_kses_post($config['hero_description']) : 'Nơi không chỉ thiết kế những công trình kiến trúc có <b>giá trị thẩm mỹ</b> tinh tế, mà còn tạo <b>môi trường sống lí tưởng</b> cho sức khỏe thể chất và tinh thần của bạn và gia đình.';
+					?>
+					<h1 class="title"><?= $hero_title ?></h1>
+					<p class="text-grey block-desc"><?= $hero_description ?></p>
 				</div>
 			<?php endif ?>
 		</div>
