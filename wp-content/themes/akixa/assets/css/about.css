@@ -6,11 +6,6 @@ header .content {
 	display: none;
 }
 
-header .logo img {
-	width: 63px;
-	scale: 1.4;
-}
-
 .banner {
 	position: relative;
 	margin-top: 79px;

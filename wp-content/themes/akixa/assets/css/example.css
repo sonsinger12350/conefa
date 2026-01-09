@@ -2,11 +2,6 @@ header {
 	min-height: unset;
 }
 
-header .logo img {
-	width: 63px;
-	scale: 1.4;
-}
-
 .page {
 	margin-top: 79px;
 	min-height: 51vh;

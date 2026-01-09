@@ -6,11 +6,6 @@ header {
 	min-height: unset;
 }
 
-header .logo img {
-	width: 63px;
-	scale: 1.4;
-}
-
 .margin-section {
 	margin-top: 80px;
 }
