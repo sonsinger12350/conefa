@@ -27,5 +27,8 @@ wp-config.php
 # Log files
 *.log
 
-# htaccess
+# Apache: root .htaccess is often environment-specific (permalinks, local rules).
 /.htaccess
+
+# Local docs / notes (not versioned)
+/Document/
