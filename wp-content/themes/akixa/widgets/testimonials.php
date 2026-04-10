@@ -185,9 +185,9 @@ class Custom_Elementor_Widget_Testimonials extends \Elementor\Widget_Base {
 			
 			// Profile section
 			$output .= '<div class="testimonial-header">';
-			if ($profile_image_url) {
+			if ($profile_image_url || !empty($item['profile_image']['id'])) {
 				$output .= '<div class="testimonial-profile-image">';
-				$output .= '<img src="' . esc_url($profile_image_url) . '" alt="' . esc_attr($name) . '">';
+				$output .= akixa_elementor_attachment_image($item['profile_image'], 'akixa-avatar', $name);
 				$output .= '</div>';
 			}
 			
@@ -210,9 +210,9 @@ class Custom_Elementor_Widget_Testimonials extends \Elementor\Widget_Base {
 			$output .= '</div>';
 
 			// Architectural image
-			if ($architectural_image_url) {
+			if ($architectural_image_url || !empty($item['architectural_image']['id'])) {
 				$output .= '<div class="testimonial-architectural-image">';
-				$output .= '<img src="' . esc_url($architectural_image_url) . '" alt="' . esc_attr($name) . ' - Kiến trúc">';
+				$output .= akixa_elementor_attachment_image($item['architectural_image'], 'akixa-testimonial-arch', $name ? $name . ' - Kiến trúc' : '');
 				$output .= '</div>';
 			}
 

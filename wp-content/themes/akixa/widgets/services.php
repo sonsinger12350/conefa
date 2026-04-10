@@ -177,9 +177,9 @@ class Custom_Elementor_Widget_Services extends \Elementor\Widget_Base {
 			$output .= '<div class="slide-item" data-slide-index="' . esc_attr($index) . '">';
 			if ($link) $output .= '<a href="' . esc_url($link) . '"' . $target . $nofollow . '>';
 			
-			if ($image_url) {
+			if ($image_url || !empty($item['item_image']['id'])) {
 				$output .= '<div class="item-image">';
-				$output .= '<img src="' . esc_url($image_url) . '" alt="' . esc_attr($title ? $title : $description) . '">';
+				$output .= akixa_elementor_attachment_image($item['item_image'], 'akixa-section', $title ? $title : $description);
 				$output .= '</div>';
 			}
 			
@@ -202,9 +202,9 @@ class Custom_Elementor_Widget_Services extends \Elementor\Widget_Base {
 			$image_url = !empty($item['item_image']['url']) ? $item['item_image']['url'] : '';
 			$active_class = ($index === 0) ? ' active' : '';
 			
-			if ($image_url) {
+			if ($image_url || !empty($item['item_image']['id'])) {
 				$output .= '<div class="thumbnail-item' . $active_class . '" data-slide="' . esc_attr($index) . '">';
-				$output .= '<img src="' . esc_url($image_url) . '" alt="Thumbnail ' . esc_attr($index + 1) . '">';
+				$output .= akixa_elementor_attachment_image($item['item_image'], 'akixa-service-nav', 'Thumbnail ' . ($index + 1));
 				$output .= '</div>';
 			}
 		}

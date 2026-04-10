@@ -148,3 +148,36 @@ function getMinMaxSizeProduct() {
 
 	return ['min' => $min, 'max' => $max];
 }
+
+/**
+ * Ảnh từ Elementor MEDIA: dùng attachment ID + srcset; fallback URL nếu không có ID.
+ *
+ * @param array  $media        Phần tử control MEDIA (có 'id', 'url').
+ * @param string $size         Tên size đã đăng ký (vd. akixa-card).
+ * @param string $alt          Alt text.
+ * @param array  $extra_attrs  Thuộc tính bổ sung cho wp_get_attachment_image.
+ * @return string HTML img an toàn.
+ */
+function akixa_elementor_attachment_image($media, $size, $alt, $extra_attrs = []) {
+	$id = !empty($media['id']) ? (int) $media['id'] : 0;
+	$alt = (string) $alt;
+
+	if ($id) {
+		$attrs = array_merge(
+			[
+				'decoding' => 'async',
+				'loading'  => 'lazy',
+				'alt'      => $alt,
+			],
+			$extra_attrs
+		);
+		return wp_get_attachment_image($id, $size, false, $attrs);
+	}
+
+	$url = !empty($media['url']) ? $media['url'] : '';
+	if ($url === '') {
+		return '';
+	}
+
+	return '<img src="' . esc_url($url) . '" alt="' . esc_attr($alt) . '" decoding="async" loading="lazy" />';
+}

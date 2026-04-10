@@ -1,11 +1,21 @@
 <?php
-	if (file_exists(get_template_directory() . '/inc/functions/custom.php')) {
-		require_once get_template_directory() . '/inc/functions/custom.php';
+	if (file_exists(get_stylesheet_directory() . '/inc/functions/custom.php')) {
+		require_once get_stylesheet_directory() . '/inc/functions/custom.php';
 	}
 
 	add_action('after_setup_theme', function () {
 		add_theme_support('woocommerce');
 	});
+
+	/** Kích thước ảnh phục vụ hiển thị thực tế + srcset (PageSpeed / LCP). Sau khi deploy: Regenerate Thumbnails. */
+	add_action('after_setup_theme', function () {
+		add_image_size('akixa-avatar', 128, 128, true);
+		add_image_size('akixa-testimonial-arch', 720, 405, true);
+		add_image_size('akixa-card', 900, 500, true);
+		add_image_size('akixa-section', 1200, 675, true);
+		add_image_size('akixa-service-nav', 240, 150, true);
+		add_image_size('akixa-logo', 400, 200, false);
+	}, 25);
 
 	function theme_setup() {
 		// Thêm hỗ trợ cho menu

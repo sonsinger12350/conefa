@@ -35,8 +35,12 @@
 		4 => 'Share',
 	];
 
-	$slides = get_post_gallery($post->ID, false);
-	if (!empty($slides)) $slides = $slides['src'];
+	$gallery_first = get_post_gallery($post->ID, false);
+	$slides        = (!empty($gallery_first['src']) && is_array($gallery_first['src'])) ? $gallery_first['src'] : [];
+	$slide_ids     = [];
+	if (!empty($gallery_first['ids'])) {
+		$slide_ids = array_filter(array_map('absint', explode(',', (string) $gallery_first['ids'])));
+	}
 	$totalSlide = !empty($slides) ? count($slides) : 0;
 
 	$args = array(
@@ -96,8 +100,25 @@
 			<div class="bg-blur-mobile d-sm-none"></div>
 			<?php if (!empty($slides)): ?>
 				<div class="owl-carousel owl-theme">
-					<?php foreach ($slides as $k => $slideImg): ?>
-						<div><img src="<?= $slideImg ?>" alt="slide-<?= $k ?>" loading="lazy"></div>
+					<?php foreach ($slides as $k => $slideImg) : ?>
+						<div>
+							<?php
+							$sid = !empty($slide_ids[$k]) ? (int) $slide_ids[$k] : attachment_url_to_postid($slideImg);
+							if ($sid) {
+								$img_attrs = [
+									'alt'       => 'slide-' . (int) $k,
+									'decoding'  => 'async',
+									'loading'   => $k === 0 ? 'eager' : 'lazy',
+								];
+								if ($k === 0) {
+									$img_attrs['fetchpriority'] = 'high';
+								}
+								echo wp_get_attachment_image($sid, 'akixa-section', false, $img_attrs);
+							} else {
+								echo '<img src="' . esc_url($slideImg) . '" alt="slide-' . (int) $k . '" decoding="async" loading="' . ($k === 0 ? 'eager' : 'lazy') . '"' . ($k === 0 ? ' fetchpriority="high"' : '') . '>';
+							}
+							?>
+						</div>
 					<?php endforeach ?>
 				</div>
 			<?php endif ?>
@@ -117,7 +138,21 @@
 			<div class="project-gallery">
 				<?php if (!empty($projects)): ?>
 					<?php foreach ($projects as $v): ?>
-						<a href="<?= get_permalink($v->ID) ?>"><img src="<?= get_the_post_thumbnail_url($v->ID) ?>" alt="<?= $v->post_title ?>" loading="lazy"></a>
+						<a href="<?= get_permalink($v->ID) ?>"><?php
+							$thumb_id = get_post_thumbnail_id($v->ID);
+							if ($thumb_id) {
+								echo wp_get_attachment_image(
+									$thumb_id,
+									'akixa-card',
+									false,
+									[
+										'alt'      => $v->post_title,
+										'loading'  => 'lazy',
+										'decoding' => 'async',
+									]
+								);
+							}
+						?></a>
 					<?php endforeach ?>
 				<?php endif ?>
 			</div>

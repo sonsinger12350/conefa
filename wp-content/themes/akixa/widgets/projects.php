@@ -263,8 +263,6 @@ class Custom_Elementor_Widget_Projects extends \Elementor\Widget_Base {
 			
 			// Get featured image
 			$image_id = get_post_thumbnail_id($post_id);
-			$image_url = '';
-			if ($image_id) $image_url = wp_get_attachment_image_url($image_id, 'full');
 			
 			// Get category (first term from taxonomy)
 			$categories = get_the_terms($post_id, $taxonomy);
@@ -284,9 +282,18 @@ class Custom_Elementor_Widget_Projects extends \Elementor\Widget_Base {
 			$output .= '<div class="slide-item" data-slide-index="' . esc_attr($index) . '">';
 			$output .= '<a href="' . esc_url($link) . '">';
 			
-			if ($image_url) {
+			if ($image_id) {
 				$output .= '<div class="item-image">';
-				$output .= '<img src="' . esc_url($image_url) . '" alt="' . esc_attr($name ? $name : $category) . '">';
+				$output .= wp_get_attachment_image(
+					$image_id,
+					'akixa-card',
+					false,
+					[
+						'alt'      => $name ? $name : $category,
+						'decoding' => 'async',
+						'loading'  => 'lazy',
+					]
+				);
 				$output .= '</div>';
 			}
 			
