@@ -150,6 +150,73 @@ function getMinMaxSizeProduct() {
 }
 
 /**
+ * Tìm attachment ID từ URL uploads, có xử lý fallback cho webp/scaled/sized.
+ *
+ * @param string $url URL ảnh.
+ * @return int Attachment ID hoặc 0.
+ */
+function akixa_find_attachment_id_from_url($url) {
+	global $wpdb;
+
+	$url = (string) $url;
+	if ($url === '') {
+		return 0;
+	}
+
+	// Thử cách chuẩn của WP trước.
+	$id = attachment_url_to_postid($url);
+	if ($id) {
+		return (int) $id;
+	}
+
+	$upload = wp_upload_dir();
+	$base_url_path = wp_parse_url($upload['baseurl'], PHP_URL_PATH);
+	$target_path = wp_parse_url($url, PHP_URL_PATH);
+
+	if (empty($base_url_path) || empty($target_path) || strpos($target_path, $base_url_path) !== 0) {
+		return 0;
+	}
+
+	$relative = ltrim(substr($target_path, strlen($base_url_path)), '/');
+	if ($relative === '') {
+		return 0;
+	}
+
+	$relative = rawurldecode($relative);
+	$ext = strtolower(pathinfo($relative, PATHINFO_EXTENSION));
+	$name_without_ext = preg_replace('/\.[^.]+$/', '', $relative);
+	$without_scaled = preg_replace('/-scaled$/', '', $name_without_ext);
+	$without_dimension = preg_replace('/-\d+x\d+$/', '', $without_scaled);
+
+	$candidates = [$relative];
+	$ext_candidates = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+
+	foreach ($ext_candidates as $candidate_ext) {
+		$candidates[] = $name_without_ext . '.' . $candidate_ext;
+		$candidates[] = $without_scaled . '.' . $candidate_ext;
+		$candidates[] = $without_dimension . '.' . $candidate_ext;
+	}
+
+	$candidates = array_values(array_unique(array_filter($candidates)));
+	if (empty($candidates)) {
+		return 0;
+	}
+
+	$placeholders = implode(',', array_fill(0, count($candidates), '%s'));
+	$sql = $wpdb->prepare(
+		"SELECT post_id FROM {$wpdb->postmeta} WHERE meta_key = '_wp_attached_file' AND meta_value IN ($placeholders) LIMIT 1",
+		$candidates
+	);
+	$found_id = (int) $wpdb->get_var($sql);
+
+	if ($found_id > 0) {
+		return $found_id;
+	}
+
+	return 0;
+}
+
+/**
  * Ảnh từ Elementor MEDIA: dùng attachment ID + srcset; fallback URL nếu không có ID.
  *
  * @param array  $media        Phần tử control MEDIA (có 'id', 'url').
@@ -161,6 +228,10 @@ function getMinMaxSizeProduct() {
 function akixa_elementor_attachment_image($media, $size, $alt, $extra_attrs = []) {
 	$id = !empty($media['id']) ? (int) $media['id'] : 0;
 	$alt = (string) $alt;
+
+	if (!$id && !empty($media['url'])) {
+		$id = akixa_find_attachment_id_from_url($media['url']);
+	}
 
 	if ($id) {
 		$attrs = array_merge(
