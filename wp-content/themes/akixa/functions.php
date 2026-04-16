@@ -19,11 +19,33 @@
 
 	/**
 	 * Thêm fetchpriority=high cho ảnh đầu tiên của Elementor Image Carousel (Swiper).
-	 * Giúp trình duyệt ưu tiên tải ảnh LCP sớm hơn.
+	 * Hook đúng: elementor/widget/render_content — áp dụng cho cả frontend render.
+	 * Giúp PSI nhận diện fetchpriority=high trực tiếp trên thẻ <img> LCP.
 	 */
-	add_filter('elementor/image_carousel/print_image_attribute', function($attr) {
-		return $attr;
-	});
+	add_filter('elementor/widget/render_content', function($content, $widget) {
+		if ($widget->get_name() !== 'image-carousel') return $content;
+		if (!is_front_page()) return $content;
+
+		static $applied = false;
+		if ($applied) return $content;
+		$applied = true;
+
+		$content = preg_replace_callback(
+			'/<img(\s[^>]*)>/i',
+			function($m) {
+				$attrs = $m[1];
+				$attrs = preg_replace('/\s+loading=["\']lazy["\']/i', '', $attrs);
+				if (strpos($attrs, 'fetchpriority') === false) {
+					$attrs .= ' fetchpriority="high"';
+				}
+				return '<img' . $attrs . '>';
+			},
+			$content,
+			1
+		);
+
+		return $content;
+	}, 10, 2);
 
 	add_action('wp_head', function () {
 		if (!is_front_page()) {
