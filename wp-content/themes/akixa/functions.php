@@ -17,6 +17,44 @@
 		add_image_size('akixa-logo', 400, 200, false);
 	}, 25);
 
+	/**
+	 * Thêm fetchpriority=high cho ảnh đầu tiên của Elementor Image Carousel (Swiper).
+	 * Giúp trình duyệt ưu tiên tải ảnh LCP sớm hơn.
+	 */
+	add_filter('elementor/image_carousel/print_image_attribute', function($attr) {
+		return $attr;
+	});
+
+	add_action('wp_head', function () {
+		if (!is_front_page()) {
+			return;
+		}
+
+		$config   = getConnestConfig();
+		$slide_id = !empty($config['lcp_image_id']) ? (int) $config['lcp_image_id'] : 0;
+
+		if (!$slide_id) {
+			$post = get_page_by_path('trang-chu');
+			if (!$post) {
+				return;
+			}
+			$gallery = get_post_gallery($post->ID, false);
+			$ids     = !empty($gallery['ids']) ? array_filter(array_map('absint', explode(',', $gallery['ids']))) : [];
+			$slide_id = !empty($ids) ? (int) reset($ids) : 0;
+		}
+
+		if (!$slide_id) {
+			return;
+		}
+
+		$img_src = wp_get_attachment_image_src($slide_id, 'akixa-section');
+		if (empty($img_src[0])) {
+			return;
+		}
+
+		echo '<link rel="preload" as="image" href="' . esc_url($img_src[0]) . '" fetchpriority="high">' . "\n";
+	}, 1);
+
 	function theme_setup() {
 		// Thêm hỗ trợ cho menu
 		add_theme_support('menus');
