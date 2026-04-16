@@ -18,41 +18,33 @@
 	}, 25);
 
 	/**
-	 * Thêm fetchpriority=high cho ảnh đầu tiên của Elementor Image Carousel (Swiper).
-	 * Hook đúng: elementor/widget/render_content — áp dụng cho cả frontend render.
-	 * Giúp PSI nhận diện fetchpriority=high trực tiếp trên thẻ <img> LCP.
+	 * Thêm fetchpriority=high cho ảnh LCP (swiper-slide-image) trên trang chủ.
+	 * Dùng output buffer bắt toàn bộ HTML — không phụ thuộc widget nào render ảnh.
+	 * Chạy ở priority 99 (sau Elementor render xong) nhưng trước LiteSpeed cache.
+	 * data-no-optimize="1" ngăn LiteSpeed rewrite lại thẻ img và strip fetchpriority.
 	 */
-	add_filter('elementor/widget/render_content', function($content, $widget) {
-		if ($widget->get_name() !== 'image-carousel') return $content;
-		if (!is_front_page()) return $content;
+	add_action('template_redirect', function() {
+		if (!is_front_page()) return;
 
-		static $applied = false;
-		if ($applied) return $content;
-		$applied = true;
-
-		/**
-		 * Regex xử lý cả <img ... > và <img ... /> (Elementor dùng self-closing).
-		 * data-no-optimize="1" ngăn LiteSpeed rewrite lại thẻ img và strip fetchpriority.
-		 */
-		$content = preg_replace_callback(
-			'/<img(\s[^>]*?)\s*\/?>/i',
-			function($m) {
-				$attrs = $m[1];
-				$attrs = preg_replace('/\s+loading=["\']lazy["\']/i', '', $attrs);
-				if (strpos($attrs, 'fetchpriority') === false) {
-					$attrs .= ' fetchpriority="high"';
-				}
-				if (strpos($attrs, 'data-no-optimize') === false) {
-					$attrs .= ' data-no-optimize="1"';
-				}
-				return '<img' . $attrs . '>';
-			},
-			$content,
-			1
-		);
-
-		return $content;
-	}, 10, 2);
+		ob_start(function($html) {
+			return preg_replace_callback(
+				'/<img(\s[^>]*?class="[^"]*swiper-slide-image[^"]*"[^>]*?)\s*\/?>/i',
+				function($m) {
+					$attrs = $m[1];
+					$attrs = preg_replace('/\s+loading=["\']lazy["\']/i', '', $attrs);
+					if (strpos($attrs, 'fetchpriority') === false) {
+						$attrs .= ' fetchpriority="high"';
+					}
+					if (strpos($attrs, 'data-no-optimize') === false) {
+						$attrs .= ' data-no-optimize="1"';
+					}
+					return '<img' . $attrs . '>';
+				},
+				$html,
+				1
+			);
+		});
+	}, 99);
 
 	add_action('wp_head', function () {
 		if (!is_front_page()) {
