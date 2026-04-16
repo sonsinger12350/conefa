@@ -30,13 +30,20 @@
 		if ($applied) return $content;
 		$applied = true;
 
+		/**
+		 * Regex xử lý cả <img ... > và <img ... /> (Elementor dùng self-closing).
+		 * data-no-optimize="1" ngăn LiteSpeed rewrite lại thẻ img và strip fetchpriority.
+		 */
 		$content = preg_replace_callback(
-			'/<img(\s[^>]*)>/i',
+			'/<img(\s[^>]*?)\s*\/?>/i',
 			function($m) {
 				$attrs = $m[1];
 				$attrs = preg_replace('/\s+loading=["\']lazy["\']/i', '', $attrs);
 				if (strpos($attrs, 'fetchpriority') === false) {
 					$attrs .= ' fetchpriority="high"';
+				}
+				if (strpos($attrs, 'data-no-optimize') === false) {
+					$attrs .= ' data-no-optimize="1"';
 				}
 				return '<img' . $attrs . '>';
 			},
