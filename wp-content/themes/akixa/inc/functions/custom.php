@@ -195,6 +195,9 @@ function akixa_find_attachment_id_from_url($url) {
 		$candidates[] = $name_without_ext . '.' . $candidate_ext;
 		$candidates[] = $without_scaled . '.' . $candidate_ext;
 		$candidates[] = $without_dimension . '.' . $candidate_ext;
+		// WordPress tự tạo bản -scaled cho ảnh > 2560px → cần tìm theo tên gốc
+		$candidates[] = $without_dimension . '-scaled.' . $candidate_ext;
+		$candidates[] = $name_without_ext . '-scaled.' . $candidate_ext;
 	}
 
 	$candidates = array_values(array_unique(array_filter($candidates)));
