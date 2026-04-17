@@ -78,6 +78,22 @@
 	// Get logo from config or use default
 	$logoBlack = !empty($config['logo_black']) ? $config['logo_black'] : get_template_directory_uri()."/assets/images/logo.png?v=1";
 	$logoWhite = !empty($config['logo_white']) ? $config['logo_white'] : get_template_directory_uri()."/assets/images/logo-white.png?v=1";
+
+	// Resolve attachment ID → serve akixa-logo (400px) thay vì full size (2962px)
+	$logoBlackSrc = $logoBlack;
+	$logoWhiteSrc = $logoWhite;
+	$_bid = akixa_find_attachment_id_from_url($logoBlack);
+	if ($_bid) {
+		$_s = wp_get_attachment_image_src($_bid, 'akixa-logo');
+		if (!empty($_s[0])) $logoBlackSrc = $_s[0];
+	}
+	$_wid = akixa_find_attachment_id_from_url($logoWhite);
+	if ($_wid) {
+		$_s = wp_get_attachment_image_src($_wid, 'akixa-logo');
+		if (!empty($_s[0])) $logoWhiteSrc = $_s[0];
+	}
+	unset($_bid, $_wid, $_s);
+
 	$logo = $logoBlack;
 	
 	// Get favicon from config or use logo black as fallback
@@ -86,6 +102,7 @@
 	$categories_tree = get_product_categories_tree();
 
 	if ($isHeader2) $logo = $logoWhite;
+	$logoSrc = $isHeader2 ? $logoWhiteSrc : $logoBlackSrc;
 
 	$body_class = '';
 	if (is_user_logged_in()) $body_class .= ' logged-in';
@@ -153,7 +170,8 @@
 <body <?= body_class($body_class); ?>>
 <header class="<?= $isHeader2 ? 'scroll-down header-2' : ''?>">
 		<a class="logo d-block" href="<?= home_url() ?>">
-			<img src="<?= $logo ?>" alt="<?= $websiteName ?>" data-black="<?= $logoBlack ?>" data-white="<?= $logoWhite ?>">
+			<img src="<?= esc_url($logoSrc) ?>" alt="<?= esc_attr($websiteName) ?>" loading="eager" decoding="async"
+				data-black="<?= esc_url($logoBlackSrc) ?>" data-white="<?= esc_url($logoWhiteSrc) ?>">
 		</a>
 		<div class="center">
 			<div class="main-menu">
