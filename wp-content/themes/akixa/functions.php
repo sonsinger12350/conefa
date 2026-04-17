@@ -13,6 +13,7 @@
 		add_image_size('akixa-testimonial-arch', 720, 405, true);
 		add_image_size('akixa-card', 900, 500, true);
 		add_image_size('akixa-section', 1200, 675, true);
+		add_image_size('akixa-section-mobile', 600, 338, true);
 		add_image_size('akixa-service-nav', 240, 150, true);
 		add_image_size('akixa-logo', 400, 200, false);
 	}, 25);
@@ -113,12 +114,28 @@
 				function($m) {
 					$attrs = $m[1];
 					$attrs = preg_replace('/\s+loading=["\']lazy["\']/i', '', $attrs);
+
 					if (strpos($attrs, 'fetchpriority') === false) {
 						$attrs .= ' fetchpriority="high"';
 					}
 					if (strpos($attrs, 'data-no-optimize') === false) {
 						$attrs .= ' data-no-optimize="1"';
 					}
+
+					// Thêm srcset để mobile nhận ảnh nhỏ hơn (600px thay vì 1200px)
+					if (strpos($attrs, 'srcset') === false && preg_match('/src=["\']([^"\']+)["\']/', $attrs, $srcMatch)) {
+						$src_url = $srcMatch[1];
+						$attach_id = akixa_find_attachment_id_from_url($src_url);
+						if ($attach_id) {
+							$mobile = wp_get_attachment_image_src($attach_id, 'akixa-section-mobile');
+							$full   = wp_get_attachment_image_src($attach_id, 'akixa-section');
+							if (!empty($mobile[0]) && !empty($full[0])) {
+								$attrs .= ' srcset="' . esc_url($mobile[0]) . ' 600w, ' . esc_url($full[0]) . ' 1200w"';
+								$attrs .= ' sizes="(max-width: 768px) 100vw, 1200px"';
+							}
+						}
+					}
+
 					return '<img' . $attrs . '>';
 				},
 				$html,
