@@ -20,10 +20,14 @@
 	/**
 	 * Đăng ký thumbnail thủ công vào WP attachment metadata cho các file WebP-only
 	 * (logo, LCP image) mà plugin không tự sinh thumbnail được.
-	 * Chạy một lần duy nhất (guard bằng option akixa_thumb_meta_v2).
+	 *
+	 * Chạy mỗi request admin nhưng chỉ thực sự ghi DB khi:
+	 *   (a) file thumbnail tồn tại trên disk, VÀ
+	 *   (b) size chưa được đăng ký trong metadata.
+	 * Không dùng one-time guard để tự động xử lý lại sau khi upload file lên server.
 	 */
 	add_action('init', function () {
-		if (get_option('akixa_thumb_meta_v2')) {
+		if (!is_admin()) {
 			return;
 		}
 
@@ -32,34 +36,35 @@
 		$items = [
 			// Logo black (header) — 2962x970 → 400x131
 			[
-				'file'       => '2026/01/black1.webp',
-				'size_name'  => 'akixa-logo',
-				'thumb'      => 'black1-400x131.webp',
-				'w'          => 400,
-				'h'          => 131,
+				'file'      => '2026/01/black1.webp',
+				'size_name' => 'akixa-logo',
+				'thumb'     => 'black1-400x131.webp',
+				'w'         => 400,
+				'h'         => 131,
 			],
 			// Logo white (footer/header-2) — 2962x970 → 400x131
 			[
-				'file'       => '2026/01/white1.webp',
-				'size_name'  => 'akixa-logo',
-				'thumb'      => 'white1-400x131.webp',
-				'w'          => 400,
-				'h'          => 131,
+				'file'      => '2026/01/white1.webp',
+				'size_name' => 'akixa-logo',
+				'thumb'     => 'white1-400x131.webp',
+				'w'         => 400,
+				'h'         => 131,
 			],
 			// LCP slide image — 1376x768 → 1200x675 (akixa-section)
 			[
-				'file'       => '2026/01/Create_a_front_202511251653.webp',
-				'size_name'  => 'akixa-section',
-				'thumb'      => 'Create_a_front_202511251653-1200x675.webp',
-				'w'          => 1200,
-				'h'          => 675,
+				'file'      => '2026/01/Create_a_front_202511251653.webp',
+				'size_name' => 'akixa-section',
+				'thumb'     => 'Create_a_front_202511251653-1200x675.webp',
+				'w'         => 1200,
+				'h'         => 675,
 			],
 		];
 
 		foreach ($items as $item) {
-			$img_url  = $upload_dir['baseurl'] . '/' . $item['file'];
+			$img_url   = $upload_dir['baseurl'] . '/' . $item['file'];
 			$thumb_abs = $upload_dir['basedir'] . '/' . dirname($item['file']) . '/' . $item['thumb'];
 
+			// Chỉ xử lý khi file thumbnail đã tồn tại trên disk
 			if (!file_exists($thumb_abs)) {
 				continue;
 			}
@@ -77,6 +82,7 @@
 				continue;
 			}
 
+			// Bỏ qua nếu đã đăng ký rồi
 			if (!empty($meta['sizes'][$item['size_name']])) {
 				continue;
 			}
@@ -90,8 +96,6 @@
 
 			wp_update_attachment_metadata($attachment_id, $meta);
 		}
-
-		update_option('akixa_thumb_meta_v2', true);
 	});
 
 	/**
