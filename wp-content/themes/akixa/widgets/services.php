@@ -204,7 +204,7 @@ class Custom_Elementor_Widget_Services extends \Elementor\Widget_Base {
 			
 			if ($image_url || !empty($item['item_image']['id'])) {
 				$output .= '<div class="thumbnail-item' . $active_class . '" data-slide="' . esc_attr($index) . '">';
-				$output .= akixa_elementor_attachment_image($item['item_image'], 'akixa-service-nav', 'Thumbnail ' . ($index + 1));
+				$output .= akixa_elementor_attachment_image($item['item_image'], 'akixa-service-nav', 'Thumbnail ' . ($index + 1), ['sizes' => '120px']);
 				$output .= '</div>';
 			}
 		}
