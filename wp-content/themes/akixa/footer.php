@@ -1,12 +1,21 @@
 <?php
 	$websiteName = get_bloginfo('name');
-	$config = getConnestConfig();
-	$logoWhite = !empty($config['logo_white']) ? $config['logo_white'] : get_template_directory_uri()."/assets/images/logo-white.png?v=1";
+	$config      = getConnestConfig();
+	$logoWhite   = !empty($config['logo_white']) ? $config['logo_white'] : get_template_directory_uri()."/assets/images/logo-white.png?v=1";
+
+	// Serve akixa-logo (400px) thay vì full size (2962px) — giảm ~90 KiB
+	$logoWhiteSrc = $logoWhite;
+	$_wid = akixa_find_attachment_id_from_url($logoWhite);
+	if ($_wid) {
+		$_s = wp_get_attachment_image_src($_wid, 'akixa-logo');
+		if (!empty($_s[0])) $logoWhiteSrc = $_s[0];
+	}
+	unset($_wid, $_s);
 ?>
 	<footer>
 		<div class="footer-content">
 			<div class="logo">
-				<img src="<?= $logoWhite ?>" alt="">
+				<img src="<?= esc_url($logoWhiteSrc) ?>" alt="<?= esc_attr($websiteName) ?>" loading="lazy" decoding="async">
 				<?= get_template_part('template-parts/btn-explore', null, ['type' => 'register']); ?>
 			</div>
 			<div class="content">

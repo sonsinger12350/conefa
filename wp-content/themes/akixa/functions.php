@@ -18,6 +18,83 @@
 	}, 25);
 
 	/**
+	 * Đăng ký thumbnail thủ công vào WP attachment metadata cho các file WebP-only
+	 * (logo, LCP image) mà plugin không tự sinh thumbnail được.
+	 * Chạy một lần duy nhất (guard bằng option akixa_thumb_meta_v2).
+	 */
+	add_action('init', function () {
+		if (get_option('akixa_thumb_meta_v2')) {
+			return;
+		}
+
+		$upload_dir = wp_upload_dir();
+
+		$items = [
+			// Logo black (header) — 2962x970 → 400x131
+			[
+				'file'       => '2026/01/black1.webp',
+				'size_name'  => 'akixa-logo',
+				'thumb'      => 'black1-400x131.webp',
+				'w'          => 400,
+				'h'          => 131,
+			],
+			// Logo white (footer/header-2) — 2962x970 → 400x131
+			[
+				'file'       => '2026/01/white1.webp',
+				'size_name'  => 'akixa-logo',
+				'thumb'      => 'white1-400x131.webp',
+				'w'          => 400,
+				'h'          => 131,
+			],
+			// LCP slide image — 1376x768 → 1200x675 (akixa-section)
+			[
+				'file'       => '2026/01/Create_a_front_202511251653.webp',
+				'size_name'  => 'akixa-section',
+				'thumb'      => 'Create_a_front_202511251653-1200x675.webp',
+				'w'          => 1200,
+				'h'          => 675,
+			],
+		];
+
+		foreach ($items as $item) {
+			$img_url  = $upload_dir['baseurl'] . '/' . $item['file'];
+			$thumb_abs = $upload_dir['basedir'] . '/' . dirname($item['file']) . '/' . $item['thumb'];
+
+			if (!file_exists($thumb_abs)) {
+				continue;
+			}
+
+			$attachment_id = attachment_url_to_postid($img_url);
+			if (!$attachment_id) {
+				$attachment_id = akixa_find_attachment_id_from_url($img_url);
+			}
+			if (!$attachment_id) {
+				continue;
+			}
+
+			$meta = wp_get_attachment_metadata($attachment_id);
+			if (!is_array($meta)) {
+				continue;
+			}
+
+			if (!empty($meta['sizes'][$item['size_name']])) {
+				continue;
+			}
+
+			$meta['sizes'][$item['size_name']] = [
+				'file'      => $item['thumb'],
+				'width'     => $item['w'],
+				'height'    => $item['h'],
+				'mime-type' => 'image/webp',
+			];
+
+			wp_update_attachment_metadata($attachment_id, $meta);
+		}
+
+		update_option('akixa_thumb_meta_v2', true);
+	});
+
+	/**
 	 * Thêm fetchpriority=high cho ảnh LCP (swiper-slide-image) trên trang chủ.
 	 * Dùng output buffer bắt toàn bộ HTML — không phụ thuộc widget nào render ảnh.
 	 * Chạy ở priority 99 (sau Elementor render xong) nhưng trước LiteSpeed cache.
