@@ -16,6 +16,11 @@
 		<div class="footer-content">
 			<div class="logo">
 				<img src="<?= esc_url($logoWhiteSrc) ?>" alt="<?= esc_attr($websiteName) ?>" loading="lazy" decoding="async">
+				<?php if (!empty($config['google_maps_url'])) : ?>
+					<a class="logo-google-maps" href="<?= esc_url($config['google_maps_url']); ?>" target="_blank" rel="noopener noreferrer">
+						<img src="<?= esc_url(get_template_directory_uri() . '/assets/images/google-maps.webp'); ?>" alt="<?= esc_attr('Google Maps'); ?>" width="235" height="235" loading="lazy" decoding="async">
+					</a>
+				<?php endif; ?>
 				<?= get_template_part('template-parts/btn-explore', null, ['type' => 'register']); ?>
 			</div>
 			<div class="content">
@@ -69,12 +74,14 @@
 							</div>
 						</div>
 						<div class="social-icon gap-3">
-							
-							<a href="<?= !empty($config['social']['facebook']) ? $config['social']['facebook'] : 'javascript:void(0)'?>">
-								<img src="<?= get_template_directory_uri(); ?>/assets/images/facebook-logo.svg" alt="Zalo">
+							<a href="<?= !empty($config['social']['facebook']) ? esc_url($config['social']['facebook']) : 'javascript:void(0)' ?>">
+								<img src="<?= esc_url(get_template_directory_uri() . '/assets/images/facebook-logo.svg'); ?>" alt="<?= esc_attr('Facebook'); ?>" width="24" height="24" loading="lazy" decoding="async">
 							</a>
-							<a href="<?= !empty($config['social']['youtube']) ? $config['social']['youtube'] : 'javascript:void(0)'?>">
-								<img src="<?= get_template_directory_uri(); ?>/assets/images/youtube-logo.svg" alt="Zalo">
+							<a href="<?= !empty($config['social']['tiktok']) ? esc_url($config['social']['tiktok']) : 'javascript:void(0)' ?>">
+								<img src="<?= esc_url(get_template_directory_uri() . '/assets/images/tiktok.svg'); ?>" alt="<?= esc_attr('TikTok'); ?>" width="24" height="24" loading="lazy" decoding="async">
+							</a>
+							<a href="<?= !empty($config['social']['youtube']) ? esc_url($config['social']['youtube']) : 'javascript:void(0)' ?>">
+								<img src="<?= esc_url(get_template_directory_uri() . '/assets/images/youtube-logo.svg'); ?>" alt="<?= esc_attr('YouTube'); ?>" width="24" height="24" loading="lazy" decoding="async">
 							</a>
 						</div>
 					</div>

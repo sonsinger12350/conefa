@@ -571,9 +571,30 @@ footer {
 	padding: 24px;	
 }
 
-footer .logo img {
+footer .logo {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+}
+
+footer .logo > img:first-of-type {
 	width: 235px;
 	height: auto;
+}
+
+footer .logo .logo-google-maps {
+	display: flex;
+	margin-top: 12px;
+	justify-content: center;
+	width: 235px;
+	line-height: 0;
+}
+
+footer .logo .logo-google-maps img {
+	width: 117px;
+	height: auto;
+	display: block;
+	object-fit: contain;
 }
 
 footer .logo .btn-explore {
@@ -619,6 +640,17 @@ footer .content .social-icon {
 
 footer .content .social-icon a {
 	opacity: 1;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+}
+
+footer .content .social-icon img {
+	width: 24px;
+	height: 24px;
+	display: block;
+	flex-shrink: 0;
+	object-fit: contain;
 }
 
 footer .content hr {

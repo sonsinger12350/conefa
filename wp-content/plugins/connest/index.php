@@ -248,6 +248,7 @@
 				'hotline'  =>  sanitize_text_field($_POST['hotline']),
 				'email'  =>  sanitize_text_field($_POST['email']),	
 				'iframe_map'  =>  $_POST['iframe_map'],
+				'google_maps_url'  =>  isset($_POST['google_maps_url']) ? esc_url_raw(wp_unslash($_POST['google_maps_url'])) : '',
 				'hero_title'  =>  wp_kses_post($_POST['hero_title']),
 				'hero_description'  =>  wp_kses_post($_POST['hero_description']),
 				'main_green'  =>  sanitize_hex_color($_POST['main_green']),

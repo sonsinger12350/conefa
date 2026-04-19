@@ -132,6 +132,10 @@
 					<label for="youtube">Youtube:</label>
 					<input name="social[youtube]" id="youtube" value="<?= @$config['social']['youtube'] ?>" type="text">
 				</div>
+				<div class="child">
+					<label for="tiktok">TikTok:</label>
+					<input name="social[tiktok]" id="tiktok" value="<?= @$config['social']['tiktok'] ?? '' ?>" type="text">
+				</div>
 			</div>
 			<div class="item">
 				<label for="hotline">Hotline:</label>
@@ -144,6 +148,10 @@
 			<div class="item">
 				<label for="iframe_map">Nhúng bản đồ:</label>
 				<input name="iframe_map" id="iframe_map" value='<?= @$config['iframe_map'] ?>' type="text">
+			</div>
+			<div class="item">
+				<label for="google_maps_url">Link Google Maps (icon chân trang):</label>
+				<input name="google_maps_url" id="google_maps_url" value="<?= esc_attr($config['google_maps_url'] ?? '') ?>" type="url" placeholder="https://maps.app.goo.gl/...">
 			</div>
 			<h3>Favicon:</h3>
 			<div class="item">
