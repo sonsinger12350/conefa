@@ -566,4 +566,156 @@
 			yoast_breadcrumb();
 		}
 	}
+
+	// =========================================================
+	// PRODUCT STATS: Star Rating & Purchase Count
+	// =========================================================
+
+	/**
+	 * Render HTML hiển thị sao cho rating thập phân (0–5).
+	 * Sao đặc = full, sao nửa = half (khi phần thập phân >= 0.3), sao rỗng = empty.
+	 */
+	function akixa_render_stars( $rating ) {
+		$rating = max( 0, min( 5, (float) $rating ) );
+		if ( $rating <= 0 ) return '';
+
+		$full  = (int) floor( $rating );
+		$half  = ( $rating - $full ) >= 0.3 ? 1 : 0;
+		$empty = 5 - $full - $half;
+
+		$html = '<div class="product-rating" aria-label="Đánh giá: ' . esc_attr( number_format( $rating, 1 ) ) . '/5 sao">';
+		for ( $i = 0; $i < $full; $i++ ) {
+			$html .= '<span class="star star-full">★</span>';
+		}
+		if ( $half ) {
+			$html .= '<span class="star star-half"><span class="star-bg">★</span><span class="star-fill">★</span></span>';
+		}
+		for ( $i = 0; $i < $empty; $i++ ) {
+			$html .= '<span class="star star-empty">★</span>';
+		}
+		$html .= '<span class="rating-value">' . esc_html( number_format( $rating, 1 ) ) . '</span>';
+		$html .= '</div>';
+
+		return $html;
+	}
+
+	// --- Meta Box: Đánh giá & Thống kê ---
+
+	add_action( 'add_meta_boxes', 'akixa_add_product_stats_metabox' );
+	function akixa_add_product_stats_metabox() {
+		add_meta_box(
+			'akixa_product_stats',
+			'Đánh giá & Thống kê',
+			'akixa_render_product_stats_metabox',
+			'product',
+			'side',
+			'default'
+		);
+	}
+
+	function akixa_render_product_stats_metabox( $post ) {
+		wp_nonce_field( 'akixa_product_stats_save', 'akixa_product_stats_nonce' );
+		$rating = get_post_meta( $post->ID, '_akixa_star_rating', true );
+		$count  = get_post_meta( $post->ID, '_akixa_purchase_count', true );
+		?>
+		<p>
+			<label for="akixa_star_rating"><strong>Đánh giá (số sao, 0–5)</strong></label><br>
+			<input
+				type="number"
+				id="akixa_star_rating"
+				name="akixa_star_rating"
+				value="<?= esc_attr( $rating ) ?>"
+				min="0" max="5" step="0.1"
+				style="width:100%"
+			>
+			<span style="font-size:12px;color:#888;">Ví dụ: 4.5 &nbsp;|&nbsp; Để trống = không hiển thị</span>
+		</p>
+		<p>
+			<label for="akixa_purchase_count"><strong>Số lượt mua</strong></label><br>
+			<input
+				type="number"
+				id="akixa_purchase_count"
+				name="akixa_purchase_count"
+				value="<?= esc_attr( $count ) ?>"
+				min="0" step="1"
+				style="width:100%"
+			>
+			<span style="font-size:12px;color:#888;">Để trống = không hiển thị</span>
+		</p>
+		<?php
+	}
+
+	add_action( 'save_post_product', 'akixa_save_product_stats_meta' );
+	function akixa_save_product_stats_meta( $post_id ) {
+		if ( ! isset( $_POST['akixa_product_stats_nonce'] ) ) return;
+		if ( ! wp_verify_nonce( $_POST['akixa_product_stats_nonce'], 'akixa_product_stats_save' ) ) return;
+		if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) return;
+		if ( ! current_user_can( 'edit_post', $post_id ) ) return;
+
+		if ( isset( $_POST['akixa_star_rating'] ) && $_POST['akixa_star_rating'] !== '' ) {
+			$rating = min( 5, max( 0, (float) $_POST['akixa_star_rating'] ) );
+			update_post_meta( $post_id, '_akixa_star_rating', $rating );
+		} else {
+			delete_post_meta( $post_id, '_akixa_star_rating' );
+		}
+
+		if ( isset( $_POST['akixa_purchase_count'] ) && $_POST['akixa_purchase_count'] !== '' ) {
+			$count = max( 0, (int) $_POST['akixa_purchase_count'] );
+			update_post_meta( $post_id, '_akixa_purchase_count', $count );
+		} else {
+			delete_post_meta( $post_id, '_akixa_purchase_count' );
+		}
+	}
+
+	// --- Settings Page: Cấu hình chung Acone ---
+
+	add_action( 'admin_menu', 'akixa_add_settings_page' );
+	function akixa_add_settings_page() {
+		add_options_page(
+			'Cấu hình Acone',
+			'Cấu hình Acone',
+			'manage_options',
+			'akixa-settings',
+			'akixa_render_settings_page'
+		);
+	}
+
+	add_action( 'admin_init', 'akixa_register_settings' );
+	function akixa_register_settings() {
+		register_setting( 'akixa_settings_group', 'akixa_consult_url', [
+			'sanitize_callback' => 'esc_url_raw',
+			'default'           => '',
+		] );
+	}
+
+	function akixa_render_settings_page() {
+		if ( ! current_user_can( 'manage_options' ) ) return;
+		?>
+		<div class="wrap">
+			<h1>Cấu hình Acone</h1>
+			<form method="post" action="options.php">
+				<?php settings_fields( 'akixa_settings_group' ); ?>
+				<table class="form-table">
+					<tr>
+						<th scope="row">
+							<label for="akixa_consult_url">URL nút Tư vấn</label>
+						</th>
+						<td>
+							<input
+								type="url"
+								id="akixa_consult_url"
+								name="akixa_consult_url"
+								value="<?= esc_attr( get_option( 'akixa_consult_url', '' ) ) ?>"
+								class="regular-text"
+								placeholder="https://zalo.me/... hoặc tel:0988870288"
+							>
+							<p class="description">Link cho nút "Tư vấn" trên thẻ sản phẩm. Để trống = nút vẫn hiển thị nhưng chưa link đâu.</p>
+						</td>
+					</tr>
+				</table>
+				<?php submit_button( 'Lưu thay đổi' ); ?>
+			</form>
+		</div>
+		<?php
+	}
 ?>
