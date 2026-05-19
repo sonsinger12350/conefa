@@ -34,6 +34,7 @@
 }
 
 .checkout-form input[type="text"],
+.checkout-form input[type="tel"],
 .checkout-form input[type="email"] {
 	width: 100%;
 	padding: 12px;
@@ -355,6 +356,7 @@
 	}
 
 	.checkout-form input[type="text"],
+	.checkout-form input[type="tel"],
 	.checkout-form input[type="email"] {
 		padding: 8px 12px;
 	}

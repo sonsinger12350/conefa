@@ -3,6 +3,238 @@
 		require_once get_stylesheet_directory() . '/inc/functions/custom.php';
 	}
 
+	// =========================================================
+	// IMPL-08: Exit intent popup (single product, shop, category)
+	// Tùy chọn: định nghĩa trong wp-config.php — GIFT_BOX_URL_TAILIEU, GIFT_BOX_URL_TINHGIA
+	// =========================================================
+
+	add_action(
+		'wp_enqueue_scripts',
+		function () {
+			if ( ! function_exists( 'is_shop' ) ) {
+				return;
+			}
+			if ( ! is_singular( 'product' ) && ! is_product_category() ) {
+				return;
+			}
+			$ver = '1.0.0';
+			wp_enqueue_style( 'akixa-exit-intent', get_template_directory_uri() . '/assets/css/exit-intent-popup.css', array(), $ver );
+			wp_enqueue_script( 'akixa-exit-intent', get_template_directory_uri() . '/assets/js/exit-intent-popup.js', array(), $ver, true );
+			wp_localize_script(
+				'akixa-exit-intent',
+				'akixaExitIntent',
+				array(
+					'fanpageUrl'         => apply_filters( 'akixa_exit_popup_fanpage_url', 'https://www.facebook.com/aconenhavuon' ),
+					'beforeUnloadPrompt' => apply_filters( 'akixa_exit_popup_before_unload_string', ' ' ),
+				)
+			);
+		},
+		20
+	);
+
+	add_filter(
+		'body_class',
+		function ( $classes ) {
+			if ( is_singular( 'product' ) ) {
+				$classes[] = 'single-product';
+			}
+			if ( is_product_category() ) {
+				$classes[] = 'tax-product_cat';
+			}
+			if ( function_exists( 'is_shop' ) && is_shop() ) {
+				$classes[] = 'woocommerce-shop';
+			}
+			return $classes;
+		},
+		20
+	);
+
+	function akixa_get_product_request_cf7_form_id() {
+		if ( ! function_exists( 'wpcf7_get_contact_form_by_title' ) || ! function_exists( 'wpcf7_save_contact_form' ) ) {
+			return 0;
+		}
+
+		$title = 'Yêu cầu sản phẩm';
+		$form = implode(
+			"\n\n",
+			array(
+				'<label> Họ và tên * [text* request-name class:form-control autocomplete:name] </label>',
+				'<label> Số điện thoại * [tel* request-phone class:form-control autocomplete:tel] </label>',
+				'<label class="product-request-type-field"> Loại yêu cầu * <span class="product-request-type-options"><label><input type="radio" name="request-type-choice" value="Chỉnh sửa bản vẽ" checked> Chỉnh sửa bản vẽ</label><label><input type="radio" name="request-type-choice" value="Yêu cầu bản vẽ mới"> Yêu cầu bản vẽ mới</label></span> </label>',
+				'[hidden request-type id:product-request-type]',
+				'[hidden request-service id:product-request-service]',
+				'[hidden request-source id:product-request-source]',
+				'[hidden request-note id:product-request-note]',
+				'[hidden product-id id:product-request-product-id]',
+				'[hidden product-name id:product-request-product-name]',
+				'[hidden product-url id:product-request-product-url]',
+				'[submit class:btn class:btn-success "Gửi yêu cầu"]',
+			)
+		);
+
+		$mail = array(
+			'active'             => true,
+			'subject'            => '[_site_title] Yêu cầu sản phẩm - [request-type]',
+			'sender'             => '[_site_title] <wordpress@acone.vn>',
+			'recipient'          => '[_site_admin_email]',
+			'body'               => "Khách hàng gửi yêu cầu từ trang chi tiết sản phẩm:\n\nHọ tên: [request-name]\nSố điện thoại: [request-phone]\nLoại yêu cầu: [request-type]\nDịch vụ: [request-service]\nNguồn form: [request-source]\nGhi chú: [request-note]\n\nSản phẩm: [product-name]\nProduct ID: [product-id]\nURL: [product-url]\n\n-- \nTừ website ([_site_title] [_site_url]).",
+			'additional_headers' => '',
+			'attachments'        => '',
+			'use_html'           => false,
+			'exclude_blank'      => false,
+		);
+
+		$contact_form = wpcf7_get_contact_form_by_title( $title );
+		if ( $contact_form ) {
+			if ( '20260519-2' !== get_option( 'akixa_product_request_cf7_version' ) ) {
+				wpcf7_save_contact_form(
+					array(
+						'id'     => (int) $contact_form->id(),
+						'title'  => $title,
+						'locale' => get_locale(),
+						'form'   => $form,
+						'mail'   => $mail,
+					)
+				);
+				update_option( 'akixa_product_request_cf7_version', '20260519-2', false );
+			}
+			return (int) $contact_form->id();
+		}
+
+		$contact_form = wpcf7_save_contact_form(
+			array(
+				'id'     => -1,
+				'title'  => $title,
+				'locale' => get_locale(),
+				'form'   => $form,
+				'mail'   => $mail,
+			)
+		);
+		update_option( 'akixa_product_request_cf7_version', '20260519-2', false );
+
+		return $contact_form ? (int) $contact_form->id() : 0;
+	}
+
+	add_filter(
+		'cfdb7_admin_subpage_columns',
+		function ( $columns, $form_post_id ) {
+			if ( (int) $form_post_id !== (int) akixa_get_product_request_cf7_form_id() ) {
+				return $columns;
+			}
+
+			return array(
+				'cb'              => '<input type="checkbox" />',
+				'request-name'    => __( 'Họ tên', 'akixa' ),
+				'request-phone'   => __( 'Số điện thoại', 'akixa' ),
+				'request-type'    => __( 'Loại yêu cầu', 'akixa' ),
+				'request-service' => __( 'Dịch vụ', 'akixa' ),
+				'product-name'    => __( 'Sản phẩm', 'akixa' ),
+				'form-date'       => __( 'Ngày gửi', 'akixa' ),
+			);
+		},
+		10,
+		2
+	);
+
+	add_filter(
+		'wpcf7_skip_mail',
+		function ( $skip_mail, $contact_form ) {
+			if ( (int) $contact_form->id() === (int) akixa_get_product_request_cf7_form_id() ) {
+				return true;
+			}
+
+			return $skip_mail;
+		},
+		10,
+		2
+	);
+
+	add_action(
+		'wp_footer',
+		function () {
+			if ( ! function_exists( 'is_shop' ) ) {
+				return;
+			}
+			if ( ! is_singular( 'product' ) && ! is_product_category() ) {
+				return;
+			}
+
+			?>
+	<!-- EXIT INTENT POPUP (IMPL-08) -->
+	<div class="exit-overlay" id="exit-overlay" aria-hidden="true"></div>
+	<div class="exit-popup" id="exit-popup-1" role="dialog" aria-modal="true" aria-labelledby="exit-popup-title">
+		<button type="button" class="exit-close" id="exit-close-1" aria-label="<?php echo esc_attr__( 'Đóng', 'akixa' ); ?>">&#10005;</button>
+		<h2 class="exit-title" id="exit-popup-title"><?php echo esc_html__( 'BẠN VẪN CHƯA CHỌN ĐƯỢC MẪU NHÀ ƯNG Ý???', 'akixa' ); ?></h2>
+		<button type="button" class="exit-consult-btn" id="btn-open-consult">
+			<?php echo esc_html__( 'ĐĂNG KÝ NHẬN TƯ VẤN CHUYÊN SÂU TỪ KTS', 'akixa' ); ?>
+			<small><?php echo esc_html__( 'cả buổi tìm hiểu, không bằng 15 phút gọi điện cùng chuyên gia', 'akixa' ); ?></small>
+		</button>
+	</div>
+	<div class="exit-popup exit-popup-form" id="exit-popup-2" style="display:none" role="dialog" aria-modal="true" aria-hidden="true">
+		<button type="button" class="exit-close" id="exit-close-2" aria-label="<?php echo esc_attr__( 'Đóng', 'akixa' ); ?>">&#10005;</button>
+		<p class="form-intro">
+			<?php
+			echo wp_kses_post(
+				__( 'Để kiến trúc sư tư vấn chính xác nhất, anh/chị vui lòng dành ra <strong>2 phút</strong> điền đầy đủ thông tin.<br>Sau 1 - <strong>tối đa 3 ngày</strong> Acone sẽ liên hệ lại ngay!', 'akixa' )
+			);
+			?>
+		</p>
+		<form id="exit-consult-form" novalidate>
+			<div class="form-row">
+				<div class="form-group">
+					<label><?php echo esc_html__( 'Họ và tên', 'akixa' ); ?> <span>*</span></label>
+					<input type="text" name="ho_ten" required placeholder="<?php echo esc_attr__( 'Nguyễn Văn A', 'akixa' ); ?>" autocomplete="name">
+				</div>
+				<div class="form-group">
+					<label><?php echo esc_html__( 'Số điện thoại nhận tư vấn', 'akixa' ); ?> <span>*</span></label>
+					<input type="tel" name="sdt" required placeholder="0981..." autocomplete="tel">
+				</div>
+			</div>
+			<h4 class="form-section-title"><?php echo esc_html__( 'Thông tin xây dựng', 'akixa' ); ?></h4>
+			<div class="form-row">
+				<div class="form-group">
+					<label><?php echo esc_html__( 'Diện tích đất', 'akixa' ); ?></label>
+					<input type="text" name="dien_tich_dat" placeholder="300m2">
+				</div>
+				<div class="form-group">
+					<label><?php echo esc_html__( 'Diện tích xây dựng (DxR)', 'akixa' ); ?> <span>*</span></label>
+					<input type="text" name="dien_tich_xd" required placeholder="15x10m">
+				</div>
+			</div>
+			<div class="form-group">
+				<label><?php echo esc_html__( 'Công năng dự kiến', 'akixa' ); ?> <span>*</span></label>
+				<input type="text" name="cong_nang" required placeholder="<?php echo esc_attr__( '3 ngủ, 1 khách, 1 bếp...', 'akixa' ); ?>">
+			</div>
+			<div class="form-row">
+				<div class="form-group">
+					<label><?php echo esc_html__( 'Thời gian dự kiến khởi công', 'akixa' ); ?> <span>*</span></label>
+					<input type="text" name="thoi_gian" required placeholder="<?php echo esc_attr__( 'Tháng 8 năm nay', 'akixa' ); ?>">
+				</div>
+				<div class="form-group">
+					<label><?php echo esc_html__( 'Ngân sách dự trù', 'akixa' ); ?></label>
+					<input type="text" name="ngan_sach" placeholder="<?php echo esc_attr__( 'VD: 800 triệu', 'akixa' ); ?>">
+				</div>
+			</div>
+			<div class="form-group">
+				<label><?php echo esc_html__( 'Chọn dịch vụ cần tư vấn', 'akixa' ); ?> <span>*</span></label>
+				<div class="radio-group">
+					<label><input type="radio" name="dich_vu" value="ban-ve" required> <?php echo esc_html__( 'Bản vẽ kiến trúc', 'akixa' ); ?></label>
+					<label><input type="radio" name="dich_vu" value="thi-cong"> <?php echo esc_html__( 'Thi công trọn gói', 'akixa' ); ?></label>
+				</div>
+			</div>
+			<div class="form-group">
+				<label><?php echo esc_html__( 'Mô tả thêm yêu cầu', 'akixa' ); ?></label>
+				<textarea name="mo_ta" rows="3" placeholder="<?php echo esc_attr__( 'VD: phong cách thiết kế, nhu cầu, công năng, cần gấp...', 'akixa' ); ?>"></textarea>
+			</div>
+			<button type="submit" class="btn-submit-consult"><?php echo esc_html__( 'OK - Tư vấn cho tôi!', 'akixa' ); ?></button>
+			<p class="exit-consult-message" aria-live="polite"></p>
+		</form>
+	</div>
+			<?php
+		},
+		5
+	);
+
 	add_action('after_setup_theme', function () {
 		add_theme_support('woocommerce');
 	});
@@ -244,13 +476,19 @@
 		
 		$product_id = isset($_POST['product_id']) ? intval($_POST['product_id']) : 0;
 		$customer_name = isset($_POST['customer_name']) ? sanitize_text_field($_POST['customer_name']) : '';
+		$customer_phone = isset($_POST['customer_phone']) ? sanitize_text_field($_POST['customer_phone']) : '';
 		$customer_email = isset($_POST['customer_email']) ? sanitize_email($_POST['customer_email']) : '';
 
 		if (strlen($customer_name) > 255) wp_send_json_error(['message' => 'Tên quá dài.']);
+		if (strlen($customer_phone) > 50) wp_send_json_error(['message' => 'Số điện thoại quá dài.']);
 		if (strlen($customer_email) > 255) wp_send_json_error(['message' => 'Email quá dài.']);
-		
-		if (empty($product_id) || empty($customer_name) || empty($customer_email) || !is_email($customer_email)) {
+
+		if (empty($product_id) || empty($customer_name) || empty($customer_phone)) {
 			wp_send_json_error(['message' => 'Vui lòng điền đầy đủ thông tin hợp lệ.']);
+		}
+
+		if (!empty($customer_email) && !is_email($customer_email)) {
+			wp_send_json_error(['message' => 'Email không hợp lệ.']);
 		}
 		
 		$product = wc_get_product($product_id);
@@ -267,7 +505,7 @@
 		// Set billing information
 		$order->set_billing_first_name($customer_name);
 		$order->set_billing_email($customer_email);
-		$order->set_billing_phone('');
+		$order->set_billing_phone($customer_phone);
 		
 		// Set order status
 		$order->set_status('on-hold', 'Đơn hàng đang chờ thanh toán');
@@ -416,7 +654,8 @@
 					'amount' => $order->get_total(),
 					'amount_formatted' => wc_price($order->get_total()),
 					'remark' => $remark,
-					'order_id' => $order_id
+					'order_id' => $order_id,
+					'order_key' => $order->get_order_key()
 				];
 			}
 		}
@@ -434,17 +673,20 @@
 		check_ajax_referer('checkout_nonce', 'nonce');
 		
 		$order_id = isset($_POST['order_id']) ? intval($_POST['order_id']) : 0;
+		$order_key = isset($_POST['order_key']) ? sanitize_text_field($_POST['order_key']) : '';
 		if (empty($order_id)) wp_send_json_error(['message' => 'Thiếu thông tin đơn hàng.']);
-		
+
 		$order = wc_get_order($order_id);
 		if (!$order) wp_send_json_error(['message' => 'Đơn hàng không tồn tại.']);
-		
-		// Kiểm tra email trùng khớp với đơn hàng
-		$customer_email = isset($_POST['customer_email']) ? sanitize_email($_POST['customer_email']) : '';
-		if (empty($customer_email)) wp_send_json_error(['message' => 'Thiếu thông tin.']);
-		
-		$order_email = $order->get_billing_email();
-		if (empty($order_email) || !hash_equals(strtolower(trim($order_email)), strtolower(trim($customer_email)))) wp_send_json_error(['message' => 'Không có quyền thao tác.']);
+
+		if (empty($order_key) || !hash_equals($order->get_order_key(), $order_key)) {
+			// Fallback cho các luồng cũ vẫn gửi email.
+			$customer_email = isset($_POST['customer_email']) ? sanitize_email($_POST['customer_email']) : '';
+			if (empty($customer_email)) wp_send_json_error(['message' => 'Thiếu thông tin.']);
+
+			$order_email = $order->get_billing_email();
+			if (empty($order_email) || !hash_equals(strtolower(trim($order_email)), strtolower(trim($customer_email)))) wp_send_json_error(['message' => 'Không có quyền thao tác.']);
+		}
 		
 		$order_status = $order->get_status();
 		$response_data = [
@@ -565,6 +807,86 @@
 		elseif (function_exists('yoast_breadcrumb')) {
 			yoast_breadcrumb();
 		}
+	}
+
+	// =========================================================
+	// PRODUCT REVIEWS: rating bắt buộc + chờ duyệt (IMPL-07)
+	// =========================================================
+
+	add_filter(
+		'pre_option_woocommerce_review_rating_required',
+		static function () {
+			return 'yes';
+		}
+	);
+
+	add_filter(
+		'pre_comment_approved',
+		static function ( $approved, $commentdata ) {
+			if ( isset( $commentdata['comment_type'] ) && 'review' === $commentdata['comment_type'] ) {
+				return 0;
+			}
+			return $approved;
+		},
+		10,
+		2
+	);
+
+	// Ai cũng được đánh giá (không bắt verified owner) — align với nút "Viết đánh giá"
+	add_filter(
+		'pre_option_woocommerce_review_rating_verification_required',
+		static function () {
+			return 'no';
+		}
+	);
+
+	// Mở bình luận trên trang sản phẩm khi WooCommerce bật đánh giá (tránh ẩn nút do post "Closed")
+	add_filter(
+		'comments_open',
+		static function ( $open, $post_id ) {
+			$post_id = (int) $post_id;
+			if ( ! $post_id || ! function_exists( 'wc_reviews_enabled' ) || ! wc_reviews_enabled() ) {
+				return $open;
+			}
+			if ( 'product' === get_post_type( $post_id ) ) {
+				return true;
+			}
+			return $open;
+		},
+		20,
+		2
+	);
+
+	// =========================================================
+	// PRODUCT SPECS: Attribute Map
+	// =========================================================
+
+	function get_product_spec_map() {
+		return [
+			'ma-san-pham'     => ['icon' => 'fa-barcode',          'label' => 'Mã sản phẩm'],
+			'so-tang'         => ['icon' => 'fa-building',         'label' => 'Số tầng'],
+			'dien-tich-san'   => ['icon' => 'fa-vector-square',    'label' => 'Diện tích sàn'],
+			'mat-tien-x-sau'  => ['icon' => 'fa-ruler-combined',   'label' => 'Mặt tiền x Sâu'],
+			'dien-tich'       => ['icon' => 'fa-vector-square',    'label' => 'Diện tích'],
+			'chieu-dai'       => ['icon' => 'fa-ruler-horizontal', 'label' => 'Chiều dài'],
+			'phong-ngu'       => ['icon' => 'fa-bed',              'label' => 'Phòng ngủ'],
+			'mat-tien'        => ['icon' => 'fa-arrows-left-right','label' => 'Mặt tiền'],
+			'phong-cach'      => ['icon' => 'fa-palette',          'label' => 'Phong cách'],
+			'loai-hinh'       => ['icon' => 'fa-house',            'label' => 'Loại hình'],
+			'thiet-ke-boi'    => ['icon' => 'fa-pen-ruler',        'label' => 'Thiết kế bởi'],
+			'tong-muc-dau-tu' => ['icon' => 'fa-dollar-sign',      'label' => 'Tổng mức đầu tư'],
+			'ma-sp'           => ['icon' => 'fa-barcode',          'label' => 'Mã SP'],
+		];
+	}
+
+	// =========================================================
+	// PRODUCT GALLERY: YouTube Video Helper
+	// =========================================================
+
+	function get_youtube_id($url) {
+		if (empty($url)) return '';
+		preg_match('/(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/', $url, $matches);
+		return $matches[1] ?? '';
 	}
 
 	// =========================================================

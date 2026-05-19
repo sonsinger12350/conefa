@@ -11,7 +11,6 @@
 
 	$star_rating    = get_post_meta($product_id, '_akixa_star_rating', true);
 	$purchase_count = get_post_meta($product_id, '_akixa_purchase_count', true);
-	$consult_url    = get_option('akixa_consult_url', '');
 ?>
 
 <div class="item product <?= $cols ?>">
@@ -42,7 +41,7 @@
 				<?php if (!empty($product->get_price())): ?>
 					<a class="btn btn-dark" href="<?= home_url('thanh-toan?id='.$product_id) ?>">Mua ngay</a>
 				<?php endif ?>
-				<a class="btn btn-outline-dark btn-consult" href="<?= esc_url($consult_url) ?>">Tư vấn</a>
+				<a class="btn btn-outline-dark btn-consult" href="<?= esc_url($product->get_permalink()) ?>">Chi tiết</a>
 			</div>
 		</div>
 	</div>

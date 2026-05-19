@@ -12,14 +12,15 @@ jQuery(document).ready(function ($) {
 
 		// Validate form
 		var customerName = $('#customer_name').val().trim();
+		var customerPhone = $('#customer_phone').val().trim();
 		var customerEmail = $('#customer_email').val().trim();
 
-		if (!customerName || !customerEmail) {
+		if (!customerName || !customerPhone) {
 			errorDiv.removeClass('d-none').html('Vui lòng điền đầy đủ thông tin.');
 			return false;
 		}
 
-		if (!isValidEmail(customerEmail)) {
+		if (customerEmail && !isValidEmail(customerEmail)) {
 			errorDiv.removeClass('d-none').html('Email không hợp lệ.');
 			return false;
 		}
@@ -33,6 +34,7 @@ jQuery(document).ready(function ($) {
 			nonce: $('#checkout_nonce').val(),
 			product_id: $('#product_id').val(),
 			customer_name: customerName,
+			customer_phone: customerPhone,
 			customer_email: customerEmail
 		};
 
@@ -50,8 +52,9 @@ jQuery(document).ready(function ($) {
 						saveOrderIdToCookie(response.data.order_id);
 					}
 					
-					// Lưu email để sử dụng cho các request sau
+					// Lưu thông tin xác thực đơn hàng để sử dụng cho các request sau
 					currentCustomerEmail = customerEmail;
+					currentOrderKey = response.data.order_key || null;
 					
 					// Hide form and show payment info
 					$('.checkout-form-wrapper').hide();
@@ -114,6 +117,7 @@ jQuery(document).ready(function ($) {
 	}
 
 	var currentOrderId = null;
+	var currentOrderKey = null;
 	var currentCustomerEmail = null;
 	var currentDownloads = [];
 	var orderStatusInterval = null;
@@ -139,6 +143,7 @@ jQuery(document).ready(function ($) {
 		var content = $('#payment-info-content');
 
 		currentOrderId = data.order_id;
+		currentOrderKey = data.order_key || currentOrderKey;
 		
 		// Save order ID to cookie if not already saved
 		if (currentOrderId) {
@@ -222,6 +227,7 @@ jQuery(document).ready(function ($) {
 				action: 'check_order_status',
 				nonce: $('#checkout_nonce').val(),
 				order_id: currentOrderId,
+				order_key: currentOrderKey,
 				customer_email: currentCustomerEmail
 			},
 			success: function (response) {

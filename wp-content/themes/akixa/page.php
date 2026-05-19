@@ -9,5 +9,5 @@ while ( have_posts() ) :
 	</div>
 	<?php
 endwhile;
-
+get_template_part('template-parts/practice-hello');
 get_footer();

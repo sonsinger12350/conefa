@@ -99,4 +99,12 @@
 			<?php endif ?>
 		<?php endif ?>
 	</div>
+	<!-- BOX TƯ VẤN LUÔN HIỂN THỊ -->
+	<div class="exit-inline-box">
+		<h2 class="exit-title">BẠN VẪN CHƯA CHỌN ĐƯỢC MẪU NHÀ ƯNG Ý???</h2>
+		<button class="exit-consult-btn" id="btn-open-consult-inline" type="button">
+			ĐĂNG KÝ NHẬN TƯ VẤN CHUYÊN SÂU TỪ KTS
+			<small>cả buổi tìm hiểu, không bằng 15 phút gọi điện cùng chuyên gia</small>
+		</button>
+	</div>
 </div>

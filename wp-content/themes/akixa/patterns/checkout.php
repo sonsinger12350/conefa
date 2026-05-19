@@ -63,8 +63,12 @@
 						<input type="text" id="customer_name" name="customer_name" required>
 					</div>
 					<div class="form-group">
-						<label for="customer_email">Email *</label>
-						<input type="email" id="customer_email" name="customer_email" required>
+						<label for="customer_phone">Số điện thoại *</label>
+						<input type="tel" id="customer_phone" name="customer_phone" required autocomplete="tel">
+					</div>
+					<div class="form-group">
+						<label for="customer_email">Email</label>
+						<input type="email" id="customer_email" name="customer_email" autocomplete="email">
 					</div>
 					<button type="submit" id="checkout-submit-btn">Thanh toán</button>
 				</form>
@@ -112,4 +116,3 @@
 </div>
 
 <?php get_footer(); ?>
-

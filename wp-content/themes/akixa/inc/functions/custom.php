@@ -255,3 +255,42 @@ function akixa_elementor_attachment_image($media, $size, $alt, $extra_attrs = []
 
 	return '<img src="' . esc_url($url) . '" alt="' . esc_attr($alt) . '" decoding="async" loading="lazy" />';
 }
+
+add_action('add_meta_boxes', function() {
+    add_meta_box('product_promotions', 'Khuyến mãi tháng', 'render_promotion_meta_box', 'product', 'normal', 'default');
+    add_meta_box('product_gallery_video', 'Video Gallery', 'render_gallery_video_meta_box', 'product', 'side', 'default');
+});
+
+function render_gallery_video_meta_box($post) {
+    $video_url = get_post_meta($post->ID, 'gallery_video', true);
+    echo '<label>URL YouTube (để trống nếu không có video)</label><br>';
+    echo '<input type="url" name="gallery_video" value="' . esc_attr($video_url) . '" style="width:100%" placeholder="https://www.youtube.com/watch?v=...">';
+}
+
+add_action('save_post_product', function($post_id) {
+    if (isset($_POST['gallery_video'])) {
+        update_post_meta($post_id, 'gallery_video', esc_url_raw($_POST['gallery_video']));
+    }
+});
+
+function render_promotion_meta_box($post) {
+    $cf = get_post_meta($post->ID);
+    echo '<p>Nhập tối đa 10 dòng khuyến mãi. Để trống dòng nào thì dòng đó không hiển thị.</p>';
+    for ($i = 1; $i <= 10; $i++) {
+        $text = $cf['promo_' . $i][0] ?? '';
+        $link = $cf['promo_link_' . $i][0] ?? '';
+        echo "<div style='margin-bottom:8px'>";
+        echo "<input type='text' name='promo_{$i}' value='" . esc_attr($text) . "' placeholder='Nội dung dòng {$i}' style='width:60%;margin-right:8px'>";
+        echo "<input type='url'  name='promo_link_{$i}' value='" . esc_attr($link) . "' placeholder='Link (tuỳ chọn)' style='width:35%'>";
+        echo "</div>";
+    }
+}
+
+add_action('save_post_product', function($post_id) {
+    for ($i = 1; $i <= 10; $i++) {
+        if (isset($_POST['promo_' . $i])) {
+            update_post_meta($post_id, 'promo_' . $i,      sanitize_text_field($_POST['promo_' . $i]));
+            update_post_meta($post_id, 'promo_link_' . $i, esc_url_raw($_POST['promo_link_' . $i]));
+        }
+    }
+});
