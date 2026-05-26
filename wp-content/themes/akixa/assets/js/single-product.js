@@ -268,20 +268,47 @@ document.addEventListener('click', function (e) {
 		return modal.querySelector('form.wpcf7-form');
 	}
 
+	function setRequestMessage(target, message, type) {
+		if (!target) {
+			return;
+		}
+
+		target.textContent = message;
+		target.classList.toggle('is-success', type === 'success');
+		target.classList.toggle('is-error', type === 'error');
+	}
+
+	function ensureCf7Ready(cf7Form) {
+		var wrapper = cf7Form.closest('.wpcf7');
+
+		if (window.wpcf7 && typeof window.wpcf7.init === 'function' && !cf7Form.wpcf7) {
+			window.wpcf7.init(cf7Form);
+		}
+
+		if (wrapper) {
+			wrapper.classList.remove('no-js');
+			wrapper.classList.add('js');
+		}
+	}
+
 	function submitSharedCf7(data, messageTarget) {
 		var cf7Form = getCf7Form();
+		pendingMessageTarget = messageTarget || null;
+
 		if (!cf7Form) {
+			setRequestMessage(
+				pendingMessageTarget,
+				'Chưa tìm thấy form lưu dữ liệu, vui lòng tải lại trang và thử lại.',
+				'error'
+			);
 			return false;
 		}
 
-		pendingMessageTarget = messageTarget || null;
+		ensureCf7Ready(cf7Form);
 		fillFields(data);
 		setRequestType(data && data['request-type'] ? data['request-type'] : '');
 
-		if (pendingMessageTarget) {
-			pendingMessageTarget.textContent = 'Đang gửi yêu cầu...';
-			pendingMessageTarget.classList.remove('is-error', 'is-success');
-		}
+		setRequestMessage(pendingMessageTarget, 'Đang gửi yêu cầu...', '');
 
 		if (window.wpcf7 && typeof window.wpcf7.submit === 'function') {
 			window.wpcf7.submit(cf7Form);
@@ -292,24 +319,6 @@ document.addEventListener('click', function (e) {
 		}
 
 		return true;
-	}
-
-	function collectExitNote(form) {
-		var parts = [];
-		[
-			'dien_tich_dat',
-			'dien_tich_xd',
-			'cong_nang',
-			'thoi_gian',
-			'ngan_sach',
-			'mo_ta'
-		].forEach(function (name) {
-			var field = form.querySelector('[name="' + name + '"]');
-			if (field && field.value) {
-				parts.push(name + ': ' + field.value);
-			}
-		});
-		return parts.join(' | ');
 	}
 
 	document.addEventListener('click', function (e) {
@@ -349,24 +358,6 @@ document.addEventListener('click', function (e) {
 			}, quickForm.querySelector('.order-form-message'));
 			return;
 		}
-
-		var exitForm = e.target.closest('#exit-consult-form');
-		if (exitForm) {
-			e.preventDefault();
-			if (!exitForm.reportValidity()) {
-				return;
-			}
-
-			var service = exitForm.querySelector('[name="dich_vu"]:checked');
-			submitSharedCf7({
-				'request-name': exitForm.querySelector('[name="ho_ten"]').value,
-				'request-phone': exitForm.querySelector('[name="sdt"]').value,
-				'request-service': service ? service.closest('label').textContent.trim() : '',
-				'request-type': 'Tư vấn chuyên sâu',
-				'request-source': 'Popup tư vấn chuyên sâu',
-				'request-note': collectExitNote(exitForm)
-			}, exitForm.querySelector('.exit-consult-message'));
-		}
 	}, true);
 
 	document.addEventListener('keydown', function (e) {
@@ -377,9 +368,7 @@ document.addEventListener('click', function (e) {
 
 	document.addEventListener('wpcf7mailsent', function (e) {
 		if (pendingMessageTarget) {
-			pendingMessageTarget.textContent = 'Cảm ơn bạn, Acone sẽ liên hệ lại sớm.';
-			pendingMessageTarget.classList.add('is-success');
-			pendingMessageTarget.classList.remove('is-error');
+			setRequestMessage(pendingMessageTarget, 'Cảm ơn bạn, Acone sẽ liên hệ lại sớm.', 'success');
 			pendingMessageTarget = null;
 		}
 		if (modal.contains(e.target)) {
@@ -387,11 +376,22 @@ document.addEventListener('click', function (e) {
 		}
 	});
 
+	document.addEventListener('wpcf7invalid', function () {
+		if (pendingMessageTarget) {
+			setRequestMessage(pendingMessageTarget, 'Vui lòng kiểm tra lại các trường bắt buộc.', 'error');
+		}
+	});
+
+	document.addEventListener('wpcf7spam', function () {
+		if (pendingMessageTarget) {
+			setRequestMessage(pendingMessageTarget, 'Yêu cầu bị chặn tạm thời, vui lòng thử lại.', 'error');
+			pendingMessageTarget = null;
+		}
+	});
+
 	document.addEventListener('wpcf7mailfailed', function () {
 		if (pendingMessageTarget) {
-			pendingMessageTarget.textContent = 'Chưa gửi được yêu cầu, vui lòng thử lại.';
-			pendingMessageTarget.classList.add('is-error');
-			pendingMessageTarget.classList.remove('is-success');
+			setRequestMessage(pendingMessageTarget, 'Chưa gửi được yêu cầu, vui lòng thử lại.', 'error');
 			pendingMessageTarget = null;
 		}
 	});

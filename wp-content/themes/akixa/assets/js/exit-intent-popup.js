@@ -24,15 +24,11 @@ function akixaInitExitIntentPopup() {
 	var btnConsult = document.getElementById('btn-open-consult');
 	var btnConsultInline = document.getElementById('btn-open-consult-inline');
 	var form = document.getElementById('exit-consult-form');
+	var pendingMessageTarget = null;
 
 	if (!overlay || !popup2) {
 		return;
 	}
-
-	var fanpageUrl =
-		typeof akixaExitIntent !== 'undefined' && akixaExitIntent.fanpageUrl
-			? akixaExitIntent.fanpageUrl
-			: 'https://www.facebook.com/aconenhavuon';
 
 	function shouldSkipExit() {
 		return window.sessionStorage && sessionStorage.getItem(SESSION_KEY);
@@ -75,6 +71,85 @@ function akixaInitExitIntentPopup() {
 		markExitConsumed();
 	}
 
+	function getHiddenCf7Form() {
+		var holder = document.getElementById('exit-consult-cf7-holder');
+		return holder ? holder.querySelector('form.wpcf7-form') : null;
+	}
+
+	function setCf7Field(cf7Form, name, value) {
+		var field = cf7Form.querySelector('[name="' + name + '"]');
+		if (field) {
+			field.value = value || '';
+		}
+	}
+
+	function setExitMessage(target, message, type) {
+		if (!target) {
+			return;
+		}
+
+		target.textContent = message;
+		target.classList.toggle('is-success', type === 'success');
+		target.classList.toggle('is-error', type === 'error');
+	}
+
+	function ensureCf7Ready(cf7Form) {
+		var wrapper = cf7Form.closest('.wpcf7');
+
+		if (window.wpcf7 && typeof window.wpcf7.init === 'function' && !cf7Form.wpcf7) {
+			window.wpcf7.init(cf7Form);
+		}
+
+		if (wrapper) {
+			wrapper.classList.remove('no-js');
+			wrapper.classList.add('js');
+		}
+	}
+
+	function submitExitCf7(exitForm) {
+		var cf7Form = getHiddenCf7Form();
+		pendingMessageTarget = exitForm.querySelector('.exit-consult-message');
+
+		if (!cf7Form) {
+			setExitMessage(
+				pendingMessageTarget,
+				'Chưa tìm thấy form lưu dữ liệu, vui lòng tải lại trang và thử lại.',
+				'error'
+			);
+			return false;
+		}
+
+		ensureCf7Ready(cf7Form);
+
+		var service = exitForm.querySelector('[name="dich_vu"]:checked');
+		var serviceText = service ? service.closest('label').textContent.trim() : '';
+
+		setCf7Field(cf7Form, 'consult-name', exitForm.querySelector('[name="ho_ten"]').value);
+		setCf7Field(cf7Form, 'consult-phone', exitForm.querySelector('[name="sdt"]').value);
+		setCf7Field(cf7Form, 'consult-land-area', exitForm.querySelector('[name="dien_tich_dat"]').value);
+		setCf7Field(cf7Form, 'consult-build-area', exitForm.querySelector('[name="dien_tich_xd"]').value);
+		setCf7Field(cf7Form, 'consult-function', exitForm.querySelector('[name="cong_nang"]').value);
+		setCf7Field(cf7Form, 'consult-start-time', exitForm.querySelector('[name="thoi_gian"]').value);
+		setCf7Field(cf7Form, 'consult-budget', exitForm.querySelector('[name="ngan_sach"]').value);
+		setCf7Field(cf7Form, 'consult-service', serviceText);
+		setCf7Field(cf7Form, 'consult-description', exitForm.querySelector('[name="mo_ta"]').value);
+		setCf7Field(cf7Form, 'consult-source', 'Popup tư vấn chuyên sâu');
+		setCf7Field(cf7Form, 'page-title', document.title);
+		setCf7Field(cf7Form, 'page-url', window.location.href);
+
+		setExitMessage(pendingMessageTarget, 'Đang gửi yêu cầu...', '');
+
+		if (window.wpcf7 && typeof window.wpcf7.submit === 'function') {
+			window.wpcf7.submit(cf7Form);
+		} else if (typeof cf7Form.requestSubmit === 'function') {
+			cf7Form.requestSubmit();
+		} else {
+			cf7Form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+		}
+
+		return true;
+	}
+
 	document.addEventListener('mouseleave', function (e) {
 		if (e.clientY < 10) {
 			showExitPopup();
@@ -99,13 +174,52 @@ function akixaInitExitIntentPopup() {
 
 	if (form) {
 		form.addEventListener('submit', function (e) {
-			if (document.body.classList.contains('single-product')) {
+			e.preventDefault();
+			if (!form.reportValidity()) {
 				return;
 			}
-			e.preventDefault();
-			window.location.href = fanpageUrl;
+
+			if (!submitExitCf7(form)) {
+				return;
+			}
 		});
 	}
+
+	document.addEventListener('wpcf7mailsent', function (e) {
+		if (!pendingMessageTarget || !e.target.closest('#exit-consult-cf7-holder')) {
+			return;
+		}
+
+		setExitMessage(pendingMessageTarget, 'Cảm ơn bạn, Acone sẽ liên hệ lại sớm.', 'success');
+		pendingMessageTarget = null;
+		window.setTimeout(closeAll, 1500);
+	});
+
+	document.addEventListener('wpcf7invalid', function (e) {
+		if (!pendingMessageTarget || !e.target.closest('#exit-consult-cf7-holder')) {
+			return;
+		}
+
+		setExitMessage(pendingMessageTarget, 'Vui lòng kiểm tra lại các trường bắt buộc.', 'error');
+	});
+
+	document.addEventListener('wpcf7spam', function (e) {
+		if (!pendingMessageTarget || !e.target.closest('#exit-consult-cf7-holder')) {
+			return;
+		}
+
+		setExitMessage(pendingMessageTarget, 'Yêu cầu bị chặn tạm thời, vui lòng thử lại.', 'error');
+		pendingMessageTarget = null;
+	});
+
+	document.addEventListener('wpcf7mailfailed', function (e) {
+		if (!pendingMessageTarget || !e.target.closest('#exit-consult-cf7-holder')) {
+			return;
+		}
+
+		setExitMessage(pendingMessageTarget, 'Chưa gửi được yêu cầu, vui lòng thử lại.', 'error');
+		pendingMessageTarget = null;
+	});
 }
 
 (function () {

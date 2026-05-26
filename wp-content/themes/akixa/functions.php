@@ -17,7 +17,7 @@
 			if ( ! is_singular( 'product' ) && ! is_product_category() ) {
 				return;
 			}
-			$ver = '1.0.0';
+			$ver = '1.0.2';
 			wp_enqueue_style( 'akixa-exit-intent', get_template_directory_uri() . '/assets/css/exit-intent-popup.css', array(), $ver );
 			wp_enqueue_script( 'akixa-exit-intent', get_template_directory_uri() . '/assets/js/exit-intent-popup.js', array(), $ver, true );
 			wp_localize_script(
@@ -115,22 +115,103 @@
 		return $contact_form ? (int) $contact_form->id() : 0;
 	}
 
+	function akixa_get_exit_consult_cf7_form_id() {
+		if ( ! function_exists( 'wpcf7_get_contact_form_by_title' ) || ! function_exists( 'wpcf7_save_contact_form' ) ) {
+			return 0;
+		}
+
+		$title = 'Tư vấn chuyên sâu';
+		$form = implode(
+			"\n\n",
+			array(
+				'[hidden consult-name id:exit-consult-name]',
+				'[hidden consult-phone id:exit-consult-phone]',
+				'[hidden consult-land-area id:exit-consult-land-area]',
+				'[hidden consult-build-area id:exit-consult-build-area]',
+				'[hidden consult-function id:exit-consult-function]',
+				'[hidden consult-start-time id:exit-consult-start-time]',
+				'[hidden consult-budget id:exit-consult-budget]',
+				'[hidden consult-service id:exit-consult-service]',
+				'[hidden consult-description id:exit-consult-description]',
+				'[hidden consult-source id:exit-consult-source]',
+				'[hidden page-title id:exit-consult-page-title]',
+				'[hidden page-url id:exit-consult-page-url]',
+				'[submit class:btn class:btn-success "Gửi yêu cầu"]',
+			)
+		);
+
+		$mail = array(
+			'active'             => true,
+			'subject'            => '[_site_title] Tư vấn chuyên sâu - [consult-name]',
+			'sender'             => '[_site_title] <wordpress@acone.vn>',
+			'recipient'          => '[_site_admin_email]',
+			'body'               => "Khách hàng gửi form tư vấn chuyên sâu:\n\nHọ tên: [consult-name]\nSố điện thoại: [consult-phone]\nDiện tích đất: [consult-land-area]\nDiện tích xây dựng: [consult-build-area]\nCông năng dự kiến: [consult-function]\nThời gian khởi công: [consult-start-time]\nNgân sách dự trù: [consult-budget]\nDịch vụ cần tư vấn: [consult-service]\nMô tả thêm: [consult-description]\nNguồn form: [consult-source]\n\nTrang gửi form: [page-title]\nURL: [page-url]\n\n-- \nTừ website ([_site_title] [_site_url]).",
+			'additional_headers' => '',
+			'attachments'        => '',
+			'use_html'           => false,
+			'exclude_blank'      => false,
+		);
+
+		$contact_form = wpcf7_get_contact_form_by_title( $title );
+		if ( $contact_form ) {
+			if ( '20260527-1' !== get_option( 'akixa_exit_consult_cf7_version' ) ) {
+				wpcf7_save_contact_form(
+					array(
+						'id'     => (int) $contact_form->id(),
+						'title'  => $title,
+						'locale' => get_locale(),
+						'form'   => $form,
+						'mail'   => $mail,
+					)
+				);
+				update_option( 'akixa_exit_consult_cf7_version', '20260527-1', false );
+			}
+			return (int) $contact_form->id();
+		}
+
+		$contact_form = wpcf7_save_contact_form(
+			array(
+				'id'     => -1,
+				'title'  => $title,
+				'locale' => get_locale(),
+				'form'   => $form,
+				'mail'   => $mail,
+			)
+		);
+		update_option( 'akixa_exit_consult_cf7_version', '20260527-1', false );
+
+		return $contact_form ? (int) $contact_form->id() : 0;
+	}
+
 	add_filter(
 		'cfdb7_admin_subpage_columns',
 		function ( $columns, $form_post_id ) {
-			if ( (int) $form_post_id !== (int) akixa_get_product_request_cf7_form_id() ) {
-				return $columns;
+			if ( (int) $form_post_id === (int) akixa_get_product_request_cf7_form_id() ) {
+				return array(
+					'cb'              => '<input type="checkbox" />',
+					'request-name'    => __( 'Họ tên', 'akixa' ),
+					'request-phone'   => __( 'Số điện thoại', 'akixa' ),
+					'request-type'    => __( 'Loại yêu cầu', 'akixa' ),
+					'request-service' => __( 'Dịch vụ', 'akixa' ),
+					'product-name'    => __( 'Sản phẩm', 'akixa' ),
+					'form-date'       => __( 'Ngày gửi', 'akixa' ),
+				);
 			}
 
-			return array(
-				'cb'              => '<input type="checkbox" />',
-				'request-name'    => __( 'Họ tên', 'akixa' ),
-				'request-phone'   => __( 'Số điện thoại', 'akixa' ),
-				'request-type'    => __( 'Loại yêu cầu', 'akixa' ),
-				'request-service' => __( 'Dịch vụ', 'akixa' ),
-				'product-name'    => __( 'Sản phẩm', 'akixa' ),
-				'form-date'       => __( 'Ngày gửi', 'akixa' ),
-			);
+			if ( (int) $form_post_id === (int) akixa_get_exit_consult_cf7_form_id() ) {
+				return array(
+					'cb'                   => '<input type="checkbox" />',
+					'consult-name'         => __( 'Họ tên', 'akixa' ),
+					'consult-phone'        => __( 'Số điện thoại', 'akixa' ),
+					'consult-build-area'   => __( 'Diện tích xây dựng', 'akixa' ),
+					'consult-function'     => __( 'Công năng', 'akixa' ),
+					'consult-service'      => __( 'Dịch vụ', 'akixa' ),
+					'page-title'           => __( 'Trang gửi form', 'akixa' ),
+					'form-date'            => __( 'Ngày gửi', 'akixa' ),
+				);
+			}
+
+			return $columns;
 		},
 		10,
 		2
@@ -139,7 +220,11 @@
 	add_filter(
 		'wpcf7_skip_mail',
 		function ( $skip_mail, $contact_form ) {
-			if ( (int) $contact_form->id() === (int) akixa_get_product_request_cf7_form_id() ) {
+			$form_id = (int) $contact_form->id();
+			if (
+				$form_id === (int) akixa_get_product_request_cf7_form_id()
+				|| $form_id === (int) akixa_get_exit_consult_cf7_form_id()
+			) {
 				return true;
 			}
 
@@ -157,6 +242,11 @@
 			}
 			if ( ! is_singular( 'product' ) && ! is_product_category() ) {
 				return;
+			}
+
+			$exit_cf7_form_id = 0;
+			if ( function_exists( 'akixa_get_exit_consult_cf7_form_id' ) ) {
+				$exit_cf7_form_id = akixa_get_exit_consult_cf7_form_id();
 			}
 
 			?>
@@ -230,6 +320,11 @@
 			<p class="exit-consult-message" aria-live="polite"></p>
 		</form>
 	</div>
+	<?php if ( $exit_cf7_form_id ) : ?>
+		<div id="exit-consult-cf7-holder" class="exit-consult-cf7-holder" hidden>
+			<?php echo do_shortcode( '[contact-form-7 id="' . absint( $exit_cf7_form_id ) . '"]' ); ?>
+		</div>
+	<?php endif; ?>
 			<?php
 		},
 		5
