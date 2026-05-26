@@ -943,7 +943,7 @@
 
 	function get_youtube_id($url) {
 		if (empty($url)) return '';
-		preg_match('/(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/', $url, $matches);
+		preg_match('/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/', $url, $matches);
 		return $matches[1] ?? '';
 	}
 
@@ -1097,5 +1097,20 @@
 			</form>
 		</div>
 		<?php
+	}
+
+	// Cho phép khách đánh giá sản phẩm mà không cần nhập Email.
+	add_filter( 'pre_option_require_name_email', 'akixa_allow_product_review_without_email' );
+	function akixa_allow_product_review_without_email( $pre_option ) {
+		if ( empty( $_POST['comment_post_ID'] ) ) {
+			return $pre_option;
+		}
+
+		$post_id = absint( $_POST['comment_post_ID'] );
+		if ( $post_id && 'product' === get_post_type( $post_id ) ) {
+			return '0';
+		}
+
+		return $pre_option;
 	}
 ?>

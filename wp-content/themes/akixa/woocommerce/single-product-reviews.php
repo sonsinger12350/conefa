@@ -138,8 +138,8 @@ for ( $s = 5; $s >= 1; $s-- ) {
 								<input id="author" name="author" type="text" value="' . esc_attr( $commenter['comment_author'] ) . '" required>
 							</p>',
 							'email'  => '<p class="comment-form-email">
-								<label for="email">' . esc_html__( 'Email', 'akixa' ) . ( (bool) get_option( 'require_name_email' ) ? ' <span class="required">*</span>' : '' ) . '</label>
-								<input id="email" name="email" type="email" value="' . esc_attr( $commenter['comment_author_email'] ) . '" ' . ( (bool) get_option( 'require_name_email' ) ? 'required' : '' ) . '>
+								<label for="email">' . esc_html__( 'Email', 'akixa' ) . '</label>
+								<input id="email" name="email" type="email" value="' . esc_attr( $commenter['comment_author_email'] ) . '">
 							</p>',
 						),
 						'comment_field'       => '

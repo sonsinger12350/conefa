@@ -93,6 +93,7 @@ header {
 	justify-content: space-between;
 	padding: 0 10px;
 	transform: translateY(-50%);
+	pointer-events: none;
 }
 
 .slide .owl-carousel .owl-nav button {
@@ -101,6 +102,7 @@ header {
 	width: 30px;
 	height: 30px;
 	color: #fff;
+	pointer-events: auto;
 }
 
 .slide .list-image:hover .owl-nav {
@@ -108,13 +110,19 @@ header {
 }
 
 .slide .list-image .owl-item .item {
+	display: block;
+	width: 100%;
+	height: 100px;
 	cursor: pointer;
+	overflow: hidden;
 }
 
 .slide .list-image .owl-item .item img {
 	width: 100%;
 	height: 100px;
 	object-fit: cover;
+	pointer-events: none;
+	user-select: none;
 }
 
 .slide .list-image .owl-item .item.selected {
@@ -1028,7 +1036,7 @@ header {
 	justify-content: center;
 	min-height: 52px;
 	padding: 12px 22px;
-	background: linear-gradient(135deg, #1e4d31 0%, #305f3f 100%);
+	background: linear-gradient(135deg, #7f1d1d 0%, #5f1414 100%);
 	color: #fff;
 	border-radius: 16px;
 	font-size: 0.92rem;
@@ -1036,11 +1044,11 @@ header {
 	letter-spacing: 0.01em;
 	text-decoration: none;
 	white-space: nowrap;
-	box-shadow: 0 12px 26px rgba(30, 77, 49, 0.18);
+	box-shadow: 0 12px 26px rgba(127, 29, 29, 0.2);
 	transition: background-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
 }
 .gift-btn-buy:hover {
-	background: linear-gradient(135deg, #204f33 0%, #2b6a40 100%);
+	background: linear-gradient(135deg, #8f2424 0%, #681717 100%);
 	color: #fff;
 }
 .gift-note {

@@ -16,11 +16,36 @@
 		}
 
 		$args = array(
-			'limit' => $limit,
-			'offset' => $offset
+			'limit'   => $limit,
+			'offset'  => $offset,
+			'status'  => 'publish',
+			'orderby' => 'date',
+			'order'   => 'DESC',
 		);
-		if (!empty($category)) $args['category'] = [$category];
+		if (!empty($category)) $args['product_category_id'] = [$category];
 		if (!empty($keyword)) $args['s'] = $keyword;
+
+		$meta_query = ['relation' => 'AND'];
+
+		if (!empty(site__get('min-size'))) {
+			$meta_query[] = array(
+				'key'     => 'size',
+				'value'   => site__get('min-size'),
+				'compare' => '>=',
+				'type'    => 'NUMERIC',
+			);
+		}
+
+		if (!empty(site__get('max-size'))) {
+			$meta_query[] = array(
+				'key'     => 'size',
+				'value'   => site__get('max-size'),
+				'compare' => '<=',
+				'type'    => 'NUMERIC',
+			);
+		}
+
+		if (count($meta_query) > 1) $args['meta_query'] = $meta_query;
 	
 		$products = wc_get_products($args);
 

@@ -88,7 +88,7 @@
 			</div>
 			<?php if ($showBtnLoadMore): ?>
 				<div class="text-center mt-4 mb-4">
-					<button class="btn btn-load-more" value="0" data-url="<?= home_url('du-an') ?>" data-limit="<?= $limit ?>">XEM THÊM DỰ ÁN</button>
+					<button class="btn btn-load-more" value="0" data-url="<?= esc_url(add_query_arg([])) ?>" data-limit="<?= esc_attr($limit) ?>">XEM THÊM DỰ ÁN</button>
 				</div>
 			<?php endif ?>
 		<?php else: ?>

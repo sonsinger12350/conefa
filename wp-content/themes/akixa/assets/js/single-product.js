@@ -65,8 +65,16 @@ $(document).ready(function () {
 		}
 	});
 
-	$("body").on('click', '.list-image .owl-item .item', function() {
-		var slideIndex = $(this).data('slide');
+	$("body").on('click', '.list-image .owl-item', function(e) {
+		var $item = $(e.target).closest('.item');
+		if (!$item.length) {
+			$item = $(this).find('.item').first();
+		}
+
+		var slideIndex = $item.data('slide');
+		if (typeof slideIndex === 'undefined') {
+			return;
+		}
 
 		slideBigImage.trigger('to.owl.carousel', [slideIndex, 300]);
 	});
