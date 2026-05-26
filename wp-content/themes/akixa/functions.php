@@ -470,6 +470,77 @@
 	add_action('wp_ajax_load_posts', 'ajax_load_posts');
 	add_action('wp_ajax_nopriv_load_posts', 'ajax_load_posts');
 
+	function akixa_get_wc_transactional_email_actions() {
+		return apply_filters(
+			'woocommerce_email_actions',
+			array(
+				'woocommerce_low_stock',
+				'woocommerce_no_stock',
+				'woocommerce_product_on_backorder',
+				'woocommerce_order_status_pending_to_processing',
+				'woocommerce_order_status_pending_to_completed',
+				'woocommerce_order_status_processing_to_cancelled',
+				'woocommerce_order_status_pending_to_failed',
+				'woocommerce_order_status_pending_to_on-hold',
+				'woocommerce_order_status_failed_to_processing',
+				'woocommerce_order_status_failed_to_completed',
+				'woocommerce_order_status_failed_to_on-hold',
+				'woocommerce_order_status_cancelled_to_processing',
+				'woocommerce_order_status_cancelled_to_completed',
+				'woocommerce_order_status_cancelled_to_on-hold',
+				'woocommerce_order_status_on-hold_to_processing',
+				'woocommerce_order_status_on-hold_to_cancelled',
+				'woocommerce_order_status_on-hold_to_failed',
+				'woocommerce_order_status_completed',
+				'woocommerce_order_fully_refunded',
+				'woocommerce_order_partially_refunded',
+				'woocommerce_new_customer_note',
+				'woocommerce_created_customer',
+			)
+		);
+	}
+
+	function akixa_queue_deferred_checkout_email() {
+		if (!isset($GLOBALS['akixa_deferred_checkout_emails'])) {
+			return;
+		}
+
+		$GLOBALS['akixa_deferred_checkout_emails'][] = array(
+			'filter' => current_filter(),
+			'args'   => func_get_args(),
+		);
+	}
+
+	function akixa_defer_checkout_order_emails_send() {
+		if (empty($GLOBALS['akixa_deferred_checkout_emails'])) {
+			return;
+		}
+
+		$deferred_emails = $GLOBALS['akixa_deferred_checkout_emails'];
+		unset($GLOBALS['akixa_deferred_checkout_emails']);
+
+		foreach ($deferred_emails as $email) {
+			WC_Emails::send_queued_transactional_email($email['filter'], $email['args']);
+		}
+	}
+
+	function akixa_defer_checkout_order_emails_begin() {
+		if (!class_exists('WC_Emails')) {
+			return;
+		}
+
+		WC_Emails::instance();
+		$GLOBALS['akixa_deferred_checkout_emails'] = array();
+
+		foreach (akixa_get_wc_transactional_email_actions() as $action) {
+			remove_action($action, array('WC_Emails', 'send_transactional_email'), 10);
+			remove_action($action, array('WC_Emails', 'queue_transactional_email'), 10);
+			add_action($action, 'akixa_queue_deferred_checkout_email', 10, 10);
+		}
+
+		add_action('shutdown', 'akixa_defer_checkout_order_emails_send', 20);
+	}
+
 	// AJAX handler for checkout
 	function ajax_create_checkout_order() {
 		check_ajax_referer('checkout_nonce', 'nonce');
@@ -493,6 +564,8 @@
 		
 		$product = wc_get_product($product_id);
 		if (!$product || !$product->is_purchasable()) wp_send_json_error(['message' => 'Sản phẩm không hợp lệ hoặc không thể mua.']);
+
+		akixa_defer_checkout_order_emails_begin();
 		
 		// Create WooCommerce order
 		$order = wc_create_order();
@@ -534,43 +607,28 @@
 			$bank_logo_url = '';
 			$displayed_bank_name = '';
 			
-			// Get bank account data using public method
+			// get_bank_account_data() already fetches/caches bank account from Sepay API.
 			$bank_account_data = $sepay_gateway->get_bank_account_data();
-			
-			// Check if we have bank account data from API
+			$sub_account = $sepay_gateway->get_option('sub_account');
+
 			if ($bank_account_data) {
-				$bank_account_id = $sepay_gateway->get_option('bank_account');
-				
-				// Try to get bank account via API
-				$api = new WC_SePay_API();
-				$bank_account = null;
-				if ($api->is_connected() && $bank_account_id) $bank_account = $api->get_bank_account($bank_account_id);
-				
-				if ($bank_account) {
-					$required_sub_account_banks = ['BIDV', 'OCB', 'MSB', 'KienLongBank'];
-					$bank_short_name = $bank_account_data['bank']['short_name'];
-					
-					if (in_array($bank_short_name, $required_sub_account_banks)) {
-						$account_number = $sepay_gateway->get_option('sub_account');
-						if (empty($account_number)) $account_number = $bank_account['account_number'];
+				$required_sub_account_banks = ['BIDV', 'OCB', 'MSB', 'KienLongBank'];
+				$bank_short_name = $bank_account_data['bank']['short_name'];
+
+				if (in_array($bank_short_name, $required_sub_account_banks)) {
+					$account_number = $sub_account;
+					if (empty($account_number)) {
+						$account_number = $bank_account_data['account_number'] ?? $sepay_gateway->get_option('bank_account_number');
 					}
-					else {
-						$account_number = $sepay_gateway->get_option('sub_account') ? $sepay_gateway->get_option('sub_account') : $bank_account['account_number'];
-					}
-					
-					$account_holder_name = $bank_account_data['account_holder_name'];
-					$bank_bin = $bank_account_data['bank']['bin'];
-					$bank_logo_url = $bank_account_data['bank']['logo_url'];
-					$displayed_bank_name = $sepay_gateway->displayed_bank_name;
 				}
 				else {
-					// Use data from bank_account_data directly
-					$account_number = $bank_account_data['account_number'] ?? $sepay_gateway->get_option('bank_account_number');
-					$account_holder_name = $bank_account_data['account_holder_name'] ?? $sepay_gateway->get_option('bank_account_holder');
-					$bank_bin = $bank_account_data['bank']['bin'] ?? '';
-					$bank_logo_url = $bank_account_data['bank']['logo_url'] ?? '';
-					$displayed_bank_name = $sepay_gateway->displayed_bank_name;
+					$account_number = $sub_account ? $sub_account : ($bank_account_data['account_number'] ?? $sepay_gateway->get_option('bank_account_number'));
 				}
+
+				$account_holder_name = $bank_account_data['account_holder_name'] ?? $sepay_gateway->get_option('bank_account_holder');
+				$bank_bin = $bank_account_data['bank']['bin'] ?? '';
+				$bank_logo_url = $bank_account_data['bank']['logo_url'] ?? '';
+				$displayed_bank_name = $sepay_gateway->displayed_bank_name;
 			}
 			
 			// Fallback to manual settings if no API connection
