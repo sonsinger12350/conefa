@@ -10,6 +10,13 @@ $(document).ready(function () {
 		$('.menu-mobile-overlay').toggleClass('active');
 	});
 
+	$('.open-category-mobile-inline').on('click', function() {
+		$('.menu-collapse-mobile').removeClass('active');
+		$('.open-menu-mobile').removeClass('active');
+		$('.category-tree-mobile').addClass('active');
+		$('.menu-mobile-overlay').addClass('active');
+	});
+
 	$('body').on('click', '.category-tree-mobile .open-children-categories', function() {
 		let e = $(this).parent().find('.children-categories');
 
@@ -74,20 +81,18 @@ $(document).ready(function () {
 		activeMenu();
 	}
 
-	$('.main-menu .title-category, .main-menu .category-tree').hover(function() {
-		let tree = $('.main-menu .category-tree');
+	$('.main-menu .sample-menu').hover(function() {
+		let tree = $(this).find('.category-tree');
 
 		if (!tree.hasClass('active')) {
 			tree.addClass('active');
 			$('.box-overlay').show();
 		}
 	}, function() {
-		let tree = $('.main-menu .category-tree');
+		let tree = $(this).find('.category-tree');
 
-		if (!$('.main-menu .title-category').is(':hover') && !tree.is(':hover')) {
-            tree.removeClass('active');
-			$('.box-overlay').hide();
-        }
+		tree.removeClass('active');
+		$('.box-overlay').hide();
 	});
 
 	$('.main-menu .cat-parent').hover(function() {

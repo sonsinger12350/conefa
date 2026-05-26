@@ -174,8 +174,8 @@
 		padding: 8px 4px;
 	}
 
-	.main-menu #menu-menu-chinh,
-	.main-menu .title-category,
+	header .main-menu ul.menu,
+	.main-menu .sample-menu,
 	header .content {
 		display: none;
 	}

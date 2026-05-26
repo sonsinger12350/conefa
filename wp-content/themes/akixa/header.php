@@ -100,6 +100,30 @@
 	$favicon = !empty($config['favicon']) ? $config['favicon'] : $logoBlack;
 
 	$categories_tree = get_product_categories_tree();
+	$sample_category_slugs = ['nha-vuon', 'bungalow'];
+	$sample_categories_tree = [];
+
+	if (!empty($categories_tree)) {
+		foreach ($sample_category_slugs as $sample_slug) {
+			foreach ($categories_tree as $cat_id => $cat) {
+				if (!empty($cat['slug']) && $cat['slug'] === $sample_slug) {
+					$sample_categories_tree[$cat_id] = $cat;
+					break;
+				}
+			}
+		}
+	}
+
+	$header_menu_pages = [
+		[
+			'label' => 'Dịch vụ',
+			'url'   => home_url('/dich-vu/'),
+		],
+		[
+			'label' => 'Blog',
+			'url'   => home_url('/blog/'),
+		],
+	];
 
 	if ($isHeader2) $logo = $logoWhite;
 	$logoSrc = $isHeader2 ? $logoWhiteSrc : $logoBlackSrc;
@@ -179,38 +203,54 @@
 		</a>
 		<div class="center">
 			<div class="main-menu">
-				<?php
-					wp_nav_menu(
-						array(
-							'container'  => '',
-							'items_wrap' => '<ul id="%1$s" class="%2$s">%3$s</ul>',
-							'theme_location' => 'primary',
-						)
-					);
-				?>
-				<?php if (!empty($categories_tree)): ?>
-					<h5 class="title-category"><span>Danh mục sản phẩm</span> <i class="fa-solid fa-bars"></i></h5>
-					<div class="category-tree">
-						<ul class="parent-element">
-							<?php foreach ($categories_tree as $cat): ?>
-								<li class="cat-item cat-parent">
-									<a href="<?= $cat['link'] ?>" class="link-parent"><?= $cat['image'] ?><?= $cat['name'] ?></a>
-									<?php if (!empty($cat['children'])): ?>
-										<div class="children-categories">
-											<ul>
-												<?php foreach ($cat['children'] as $child): ?>
-													<li class="cat-item cat-children">
-														<a href="<?= $child['link'] ?>" class="link-children"><?= $child['name'] ?></a>
-													</li>
-												<?php endforeach ?>
-											</ul>
-										</div>
-									<?php endif ?>
-								</li>
-							<?php endforeach ?>
+				<ul id="menu-menu-chinh" class="menu">
+					<li class="menu-item menu-item-has-children menu-about">
+						<a href="javascript:void(0)" class="menu-parent-link" aria-haspopup="true" aria-expanded="false">Về chúng tôi</a>
+						<ul class="sub-menu">
+							<li class="menu-item">
+								<a href="<?= esc_url(home_url('/ve-chung-toi/')) ?>">Giới thiệu</a>
+							</li>
+							<li class="menu-item">
+								<a href="<?= esc_url(home_url('/tuyen-dung/')) ?>">Tuyển dụng</a>
+							</li>
+							<li class="menu-item">
+								<a href="<?= esc_url(home_url('/lien-he/')) ?>">Liên hệ</a>
+							</li>
 						</ul>
+					</li>
+				</ul>
+				<?php if (!empty($sample_categories_tree)): ?>
+					<div class="sample-menu">
+						<h5 class="title-category"><span>Bản vẽ mẫu</span></h5>
+						<div class="category-tree">
+							<ul class="parent-element">
+								<?php foreach ($sample_categories_tree as $cat): ?>
+									<li class="cat-item cat-parent">
+										<a href="<?= esc_url($cat['link']) ?>" class="link-parent"><?= $cat['image'] ?><?= esc_html($cat['name']) ?></a>
+										<?php if (!empty($cat['children'])): ?>
+											<div class="children-categories">
+												<ul>
+													<?php foreach ($cat['children'] as $child): ?>
+														<li class="cat-item cat-children">
+															<a href="<?= esc_url($child['link']) ?>" class="link-children"><?= esc_html($child['name']) ?></a>
+														</li>
+													<?php endforeach ?>
+												</ul>
+											</div>
+										<?php endif ?>
+									</li>
+								<?php endforeach ?>
+							</ul>
+						</div>
 					</div>
 				<?php endif ?>
+				<ul class="menu header-menu-pages">
+					<?php foreach ($header_menu_pages as $menu_page): ?>
+						<li class="menu-item">
+							<a href="<?= esc_url($menu_page['url']) ?>"><?= esc_html($menu_page['label']) ?></a>
+						</li>
+					<?php endforeach ?>
+				</ul>
 			</div>
 			<?php if (!$isHeader2): ?>
 				<div class="content">
@@ -228,38 +268,53 @@
 				<i class="fa-solid fa-bars"></i>
 				<i class="fa-solid fa-xmark"></i>
 			</a>
-			<a href="javascript:void(0)" class="open-category-mobile d-md-none">Mẫu thiết kế <i class="fa-solid fa-bars"></i></a>
+			<a href="javascript:void(0)" class="open-category-mobile d-md-none">Bản vẽ mẫu <i class="fa-solid fa-bars"></i></a>
 			<a href="javascript:void(0)" class="open-menu-mobile d-md-none">Menu <i class="fa-solid fa-bars"></i><i class="fa-solid fa-xmark"></i></a>
 		</div>
 
 		<div class="menu-collapse-mobile d-md-none">
 			<div class="card card-body">
-				<?php
-					wp_nav_menu(
-						array(
-							'container'  => '',
-							'items_wrap' => '<ul id="%1$s" class="%2$s">%3$s</ul>',
-							'theme_location' => 'primary',
-						)
-					);
-				?>
+				<ul id="menu-menu-chinh-mobile" class="menu">
+					<li class="menu-item menu-item-has-children menu-about">
+						<a href="javascript:void(0)" class="menu-parent-link">Về chúng tôi</a>
+						<ul class="sub-menu">
+							<li class="menu-item">
+								<a href="<?= esc_url(home_url('/ve-chung-toi/')) ?>">Giới thiệu</a>
+							</li>
+							<li class="menu-item">
+								<a href="<?= esc_url(home_url('/tuyen-dung/')) ?>">Tuyển dụng</a>
+							</li>
+							<li class="menu-item">
+								<a href="<?= esc_url(home_url('/lien-he/')) ?>">Liên hệ</a>
+							</li>
+						</ul>
+					</li>
+					<li class="menu-item menu-mobile-category-trigger">
+						<a href="javascript:void(0)" class="open-category-mobile-inline">Bản vẽ mẫu</a>
+					</li>
+					<?php foreach ($header_menu_pages as $menu_page): ?>
+						<li class="menu-item">
+							<a href="<?= esc_url($menu_page['url']) ?>"><?= esc_html($menu_page['label']) ?></a>
+						</li>
+					<?php endforeach ?>
+				</ul>
 			</div>
 		</div>
 		<div class="menu-mobile-overlay"></div>
 
-		<?php if (!empty($categories_tree)): ?>
+		<?php if (!empty($sample_categories_tree)): ?>
 			<div class="category-tree-mobile">
 				<ul class="parent-element">
-					<?php foreach ($categories_tree as $cat): ?>
+					<?php foreach ($sample_categories_tree as $cat): ?>
 						<li class="cat-item cat-parent">
-							<a href="<?= $cat['link'] ?>" class="link-parent"><?= $cat['image'] ?><?= $cat['name'] ?></a>
+							<a href="<?= esc_url($cat['link']) ?>" class="link-parent"><?= $cat['image'] ?><?= esc_html($cat['name']) ?></a>
 							<?php if (!empty($cat['children'])): ?>
 								<i class="fa-solid fa-plus open-children-categories"></i>
 								<div class="children-categories">
 									<ul>
 										<?php foreach ($cat['children'] as $child): ?>
 											<li class="cat-item cat-children">
-												<a href="<?= $child['link'] ?>" class="link-children"><?= $child['name'] ?></a>
+												<a href="<?= esc_url($child['link']) ?>" class="link-children"><?= esc_html($child['name']) ?></a>
 											</li>
 										<?php endforeach ?>
 									</ul>
