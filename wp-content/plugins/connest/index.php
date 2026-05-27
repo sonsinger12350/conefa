@@ -5,9 +5,20 @@
 	 * Author: Lucas
 	 * Version: 1
 	 *
-	 * Text Domain: elementor
+	 * Text Domain: connest
+	 * Domain Path: /languages
 	 *
 	 */
+
+	if ( ! defined( 'ABSPATH' ) ) {
+		exit;
+	}
+
+	function connest_load_textdomain() {
+		load_plugin_textdomain( 'connest', false, dirname( plugin_basename( __FILE__ ) ) . '/languages' );
+	}
+
+	add_action( 'init', 'connest_load_textdomain' );
 
 	// Add menu custom
 	function add_custom_admin_menu() {
